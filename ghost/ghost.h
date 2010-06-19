@@ -46,55 +46,69 @@ class CConfig;
 class CGHost
 {
 public:
+  
+  // COMMON
+  string m_Version;						// GHost++ version string
+  bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)
+	uint32_t m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
+	string m_Warcraft3Path;					// config value: Warcraft 3 path
+	bool m_TFT;								// config value: TFT enabled or not
+
+  // BNET
+  vector<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
+  
+  // ADMIN GAME
 	CUDPSocket *m_UDPSocket;				// a UDP socket for sending broadcasts and other junk (used with !sendlan)
+	CAdminGame *m_AdminGame;				// this "fake game" allows an admin who knows the password to control the bot from the local network	
+	CMap *m_AdminMap;						// the map to use in the admin game
+	bool m_LocalAdminMessages;				// config value: send local admin messages or not
+	bool m_AdminGameCreate;					// config value: create the admin game or not
+	uint16_t m_AdminGamePort;				// config value: the port to host the admin game on
+	string m_AdminGamePassword;				// config value: the admin game password
+	string m_AdminGameMap;					// config value: the admin game map config to use
+	unsigned char m_LANWar3Version;			// config value: LAN warcraft 3 version
+	
+	// RECONNECT
 	CTCPServer *m_ReconnectSocket;			// listening socket for GProxy++ reliable reconnects
 	vector<CTCPSocket *> m_ReconnectSockets;// vector of sockets attempting to reconnect (connected but not identified yet)
 	CGPSProtocol *m_GPSProtocol;
-	CCRC32 *m_CRC;							// for calculating CRC's
-	CSHA1 *m_SHA;							// for calculating SHA1's
-	vector<CBNET *> m_BNETs;				// all our battle.net connections (there can be more than one)
-	CBaseGame *m_CurrentGame;				// this game is still in the lobby state
-	CAdminGame *m_AdminGame;				// this "fake game" allows an admin who knows the password to control the bot from the local network
-	vector<CBaseGame *> m_Games;			// these games are in progress
+	bool m_Reconnect;						// config value: GProxy++ reliable reconnects enabled or not
+	uint16_t m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
+	uint32_t m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
+	
+
+
+
 	CGHostDB *m_DB;							// database
 	CGHostDB *m_DBLocal;					// local database (for temporary data)
 	vector<CBaseCallable *> m_Callables;	// vector of orphaned callables waiting to die
 	vector<BYTEARRAY> m_LocalAddresses;		// vector of local IP addresses
+	
+	// I18N
 	CLanguage *m_Language;					// language
-	CMap *m_Map;							// the currently loaded map
-	CMap *m_AdminMap;						// the map to use in the admin game
-	CMap *m_AutoHostMap;					// the map to use when autohosting
-	CSaveGame *m_SaveGame;					// the save game to use
+	string m_LanguageFile;					// config value: language file	
+	
+	// GAME PREPARATION
+  CMap *m_Map;							// the currently loaded map
+	CCRC32 *m_CRC;							// for calculating CRC's
+  CSHA1 *m_SHA;							// for calculating SHA1's
+	CSaveGame *m_SaveGame;					// the save game to use	
 	vector<PIDPlayer> m_EnforcePlayers;		// vector of pids to force players to use in the next game (used with saved games)
-	bool m_Exiting;							// set to true to force ghost to shutdown next update (used by SignalCatcher)
-	bool m_ExitingNice;						// set to true to force ghost to disconnect from all battle.net connections and wait for all games to finish before shutting down
-	bool m_Enabled;							// set to false to prevent new games from being created
-	string m_Version;						// GHost++ version string
 	uint32_t m_HostCounter;					// the current host counter (a unique number to identify a game, incremented each time a game is created)
-	string m_AutoHostGameName;				// the base game name to auto host with
-	string m_AutoHostOwner;
-	string m_AutoHostServer;
-	uint32_t m_AutoHostMaximumGames;		// maximum number of games to auto host
-	uint32_t m_AutoHostAutoStartPlayers;	// when using auto hosting auto start the game when this many players have joined
-	uint32_t m_LastAutoHostTime;			// GetTime when the last auto host was attempted
-	bool m_AutoHostMatchMaking;
-	double m_AutoHostMinimumScore;
-	double m_AutoHostMaximumScore;
-	bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)
-	uint32_t m_AllGamesFinishedTime;		// GetTime when all games finished (used when exiting nicely)
-	string m_LanguageFile;					// config value: language file
-	string m_Warcraft3Path;					// config value: Warcraft 3 path
-	bool m_TFT;								// config value: TFT enabled or not
 	string m_BindAddress;					// config value: the address to host games on
 	uint16_t m_HostPort;					// config value: the port to host games on
-	bool m_Reconnect;						// config value: GProxy++ reliable reconnects enabled or not
-	uint16_t m_ReconnectPort;				// config value: the port to listen for GProxy++ reliable reconnects on
-	uint32_t m_ReconnectWaitTime;			// config value: the maximum number of minutes to wait for a GProxy++ reliable reconnect
-	uint32_t m_MaxGames;					// config value: maximum number of games in progress
-	char m_CommandTrigger;					// config value: the command trigger inside games
 	string m_MapCFGPath;					// config value: map cfg path
 	string m_SaveGamePath;					// config value: savegame path
 	string m_MapPath;						// config value: map path
+	
+	// GAMES
+	uint32_t m_MaxGames;					// config value: maximum number of games in progress
+	CBaseGame *m_CurrentGame;				// this game is still in the lobby state
+	vector<CBaseGame *> m_Games;			// these games are in progress
+	bool m_Exiting;							// set to true to force ghost to shutdown next update (used by SignalCatcher)
+	bool m_ExitingNice;						// set to true to force ghost to disconnect from all battle.net connections and wait for all games to finish before shutting down
+	bool m_Enabled;							// set to false to prevent new games from being created
+	char m_CommandTrigger;					// config value: the command trigger inside games	
 	bool m_SaveReplays;						// config value: save replays
 	string m_ReplayPath;					// config value: replay path
 	string m_VirtualHostName;				// config value: virtual host name
@@ -123,16 +137,26 @@ public:
 	string m_MOTDFile;						// config value: motd.txt
 	string m_GameLoadedFile;				// config value: gameloaded.txt
 	string m_GameOverFile;					// config value: gameover.txt
-	bool m_LocalAdminMessages;				// config value: send local admin messages or not
-	bool m_AdminGameCreate;					// config value: create the admin game or not
-	uint16_t m_AdminGamePort;				// config value: the port to host the admin game on
-	string m_AdminGamePassword;				// config value: the admin game password
-	string m_AdminGameMap;					// config value: the admin game map config to use
-	unsigned char m_LANWar3Version;			// config value: LAN warcraft 3 version
+	
+	
+	// AUTOHOST
+	string m_AutoHostGameName;				// the base game name to auto host with
+	string m_AutoHostOwner;
+	string m_AutoHostServer;
+	uint32_t m_AutoHostMaximumGames;		// maximum number of games to auto host
+	uint32_t m_AutoHostAutoStartPlayers;	// when using auto hosting auto start the game when this many players have joined
+	uint32_t m_LastAutoHostTime;			// GetTime when the last auto host was attempted
+	bool m_AutoHostMatchMaking;
+	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
+	double m_AutoHostMinimumScore;
+	double m_AutoHostMaximumScore;
+	CMap *m_AutoHostMap;					// the map to use when autohosting
+	
+	
 	uint32_t m_ReplayWar3Version;			// config value: replay warcraft 3 version (for saving replays)
 	uint32_t m_ReplayBuildNumber;			// config value: replay build number (for saving replays)
 	bool m_TCPNoDelay;						// config value: use Nagle's algorithm or not
-	uint32_t m_MatchMakingMethod;			// config value: the matchmaking method
+
 
 	CGHost( CConfig *CFG );
 	~CGHost( );

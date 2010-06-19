@@ -30,9 +30,9 @@
 #endif
 
 // STL
-
 #include <fstream>
 #include <iostream>
+#include <stdio.h>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -42,6 +42,8 @@
 #include <string>
 #include <vector>
 
+
+#include "clua.h"
 using namespace std;
 
 typedef vector<unsigned char> BYTEARRAY;

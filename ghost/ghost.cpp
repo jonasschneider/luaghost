@@ -40,6 +40,7 @@
 #include "game.h"
 #include "game_admin.h"
 
+
 #include <signal.h>
 #include <stdlib.h>
 
@@ -225,17 +226,30 @@ void DEBUG_Print( BYTEARRAY b )
 	cout << "}" << endl;
 }
 
+
 //
 // main
 //
 
 int main( int argc, char **argv )
 {
+  using namespace luabind;
 	gCFGFile = "ghost.cfg";
 
 	if( argc > 1 && argv[1] )
 		gCFGFile = argv[1];
+  
+	CONSOLE_Print("[LUA] Starting up");
+	
+	
+  CLuaScriptManager* m_ScriptManager = new CLuaScriptManager(new CLuaContextGHost);
+  m_ScriptManager->LoadScript("main.lua");
+  
+	CONSOLE_Print("[LUA] Ready!");
+  /*
 
+  ];*/
+  
 	// read config file
 
 	CConfig CFG;
@@ -347,7 +361,9 @@ int main( int argc, char **argv )
 	// initialize ghost
 
 	gGHost = new CGHost( &CFG );
-
+  
+	m_ScriptManager->Fire("GHostInitialized", gGHost);
+	
 	while( 1 )
 	{
 		// block for 50ms on all sockets - if you intend to perform any timed actions more frequently you should change this
