@@ -1,3 +1,4 @@
-*.[ao]
-ghost++
-ghost/ghost++
+*.o
+src/ghost/ghost++
+root/ghost.dbs
+root/ghost.log
