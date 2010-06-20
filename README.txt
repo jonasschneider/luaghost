@@ -39,18 +39,18 @@ Required Files
 
 If you want to be able to connect to battle.net:
 
--> put "game.dll" in your bot_war3path
--> put "Storm.dll" in your bot_war3path
--> put "war3.exe" in your bot_war3path
+-> put "game.dll" into war3/ (or whatever you set bot_war3path to)
+-> put "Storm.dll" into war3/ (or whatever you set bot_war3path to)
+-> put "war3.exe" into war3/ (or whatever you set bot_war3path to)
 
 If you want GHost++ to automatically extract blizzard.j and common.j on startup (used when automatically calculating map values):
 
--> put "War3Patch.mpq" in your bot_war3path
+-> put "War3Patch.mpq" into war3/ (or whatever you set bot_war3path to)
 
 If you want GHost++ to automatically calculate map values:
 
--> put "blizzard.j" in your bot_mapcfgpath
--> put "common.j" in your bot_mapcfgpath
+-> put "blizzard.j" into mapcfgs/ (or whatever you set bot_mapcfgpath to)
+-> put "common.j" into mapcfgs/ (or whatever you set bot_mapcfgpath to)
 
 Note that blizzard.j and common.j will be automatically extracted from War3Patch.mpq if you provide GHost++ with your War3Patch.mpq file (as mentioned above).
 
