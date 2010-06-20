@@ -49,8 +49,8 @@ public:
   
   CLuaScriptManager* m_ScriptManager;
   
-  void FireScriptEvent(string handlerName) {
-    m_ScriptManager->Fire(handlerName);
+  void FireScriptEvent(CLuaEvent* event) {
+    m_ScriptManager->Fire(event);
   }
   
   template<class argtype> void FireScriptEvent(string handlerName, argtype argument) {

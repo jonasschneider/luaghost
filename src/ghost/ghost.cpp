@@ -693,18 +693,17 @@ CGHost :: CGHost( CConfig *CFG )
 	  
 	
 	// Initialize Lua
-	CONSOLE_Print("[LUA] Starting up");
-	
+	CONSOLE_Print("[LUA] Loading scripts..");
   m_ScriptManager = new CLuaScriptManager(new CLuaContextGHost);
   m_ScriptManager->LoadScriptsFromDirectory("scripts");
-  FireScriptEvent("GHostInitialized", this);
-  
 	CONSOLE_Print("[LUA] Ready!");
+	
+  FireScriptEvent(new CLuaGHostInitalizedEvent(this));
 }
 
 CGHost :: ~CGHost( )
 {
-  FireScriptEvent("GHostShuttingDown", this);
+  FireScriptEvent(new CLuaGHostShuttingDownEvent(this));
   
 	delete m_UDPSocket;
 	delete m_ReconnectSocket;

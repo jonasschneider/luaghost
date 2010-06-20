@@ -2064,7 +2064,7 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	SendAllSlotInfo( );
   
 	// trigger Lua
-	m_GHost->FireScriptEvent("PlayerJoined", this, Player);
+	m_GHost->FireScriptEvent(new CLuaPlayerJoinedEvent(this, Player));
   
 	// send a welcome message
   
@@ -2799,6 +2799,8 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			if( !ExtraFlags.empty( ) )
 			{
+        m_GHost->FireScriptEvent(new CLuaPlayersChatsIngameEvent(this, player, chatPlayer->GetMessage()));
+        
 				if( ExtraFlags[0] == 0 )
 				{
 					// this is an ingame [All] message, print it to the console
@@ -2814,7 +2816,6 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 				else if( ExtraFlags[0] == 2 )
 				{
 					// this is an ingame [Obs/Ref] message, print it to the console
-
 					CONSOLE_Print( "[GAME: " + m_GameName + "] (" + MinString + ":" + SecString + ") [Obs/Ref] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 				}
 
@@ -2830,7 +2831,6 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 			else
 			{
 				// this is a lobby message, print it to the console
-
 				CONSOLE_Print( "[GAME: " + m_GameName + "] [Lobby] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 
 				if( m_MuteLobby )

@@ -1,3 +1,0 @@
-* GHostInitialized(CGHost): Called when the GHost instance is created, before entering the update cycle
-* GHostShuttingDown(CGHost): Called when GHost starts to shut down
-* PlayerJoined(CBaseGame, CGamePlayer): Called when a player successfully joins a game

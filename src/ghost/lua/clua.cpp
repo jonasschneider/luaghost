@@ -18,9 +18,7 @@
 #include "gameprotocol.h"
 
 
-
 #include "boost/filesystem/operations.hpp"
-
 
 using namespace std;
 
@@ -30,6 +28,24 @@ void CLuaContextGHost::ApplyToScript(CLuaScript* script) {
   
   module(script->getLua())
   [
+    // Events
+    class_<CLuaEvent>("CLuaEvent"),
+    class_<CLuaGHostInitalizedEvent, CLuaEvent>("GHostInitalizedEvent")
+      .def("GetGHost", &CLuaGHostInitalizedEvent::GetGHost),
+      
+    class_<CLuaGHostShuttingDownEvent, CLuaEvent>("CLuaGHostShuttingDownEvent")
+      .def("GetGHost", &CLuaGHostShuttingDownEvent::GetGHost),
+    
+    class_<CLuaPlayerJoinedEvent, CLuaEvent>("CLuaPlayerJoinedEvent")
+      .def("GetGame", &CLuaPlayerJoinedEvent::GetGame)
+      .def("GetPlayer", &CLuaPlayerJoinedEvent::GetPlayer),
+      
+    class_<CLuaPlayersChatsIngameEvent, CLuaEvent>("CLuaPlayersChatsIngameEvent")
+      .def("GetGame", &CLuaPlayersChatsIngameEvent::GetGame)
+      .def("GetPlayer", &CLuaPlayersChatsIngameEvent::GetPlayer)
+      .def("GetMessage", &CLuaPlayersChatsIngameEvent::GetMessage),
+
+    // Domain classes
     class_<CGHost>("GHost")
       .def_readonly("version", &CGHost::m_Version),
     class_<CGamePlayer>("GamePlayer")
@@ -43,7 +59,6 @@ void CLuaContextGHost::ApplyToScript(CLuaScript* script) {
 
 bool CLuaScript :: Load() {
   using namespace luabind;
-  Log("Loading...");
   m_Lua = lua_open();
 	luaL_openlibs(m_Lua);
   luabind::open(m_Lua);
@@ -76,9 +91,6 @@ void CLuaScript :: Call(const char* method) {
     Log(string("Lua Error: ").append(lua_tostring(e.state(), -1)));
   }
 }
-
-
-
 
 
 void CLuaScript :: Call(const luabind::object &method) {
@@ -121,6 +133,21 @@ bool CLuaScript :: HasFunction(const char *name) {
   return false;
 }
 
+void CLuaScript :: Fire(CLuaEvent* event) {
+  Log(string("[LUA] Firing ").append(event->GetLuaName()));
+  using namespace luabind;
+  for( vector<CLuaCallback *> :: iterator i = m_Callbacks.begin( ); i != m_Callbacks.end( ); i++ ) {
+    if((*i)->MatchesHandlerName(event->GetLuaName())) {
+      try {
+        (*i)->Fire(event);
+      } catch(error& e) {
+        string msg = string("Lua Error while dispatching handler [") + event->GetLuaName() + string("]: ");
+        Log(msg.append(lua_tostring(e.state(), -1)));
+      }
+    }
+  }
+}
+
 
 
 
@@ -136,7 +163,7 @@ bool CLuaScriptManager :: LoadScript(string fileName) {
   if(new_script->Load()) {
     m_Context->ApplyToScript(new_script);
     if(new_script->HasFunction("init")) {
-      new_script->Call("init", new_script);
+      new_script->Call("init");
       m_Scripts.push_back(new_script);
     } else {
       cout << "[LUA] " << fileName << " has no 'init' function!";
@@ -173,6 +200,13 @@ bool CLuaScriptManager :: LoadScriptsFromDirectory(string dirName) {
   
   return true;
 }
+
+void CLuaScriptManager :: Fire(CLuaEvent* event) {
+  cout << "[LUA] Firing " << event->GetLuaName() << endl;
+  for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
+    (*i)->Fire(event);
+}
+  
 
 bool CLuaScriptManager :: UnloadScript(string fileName) {
   

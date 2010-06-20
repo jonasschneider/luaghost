@@ -43,7 +43,7 @@
 #include <vector>
 
 
-#include "clua.h"
+#include "lua/clua.h"
 using namespace std;
 
 typedef vector<unsigned char> BYTEARRAY;
