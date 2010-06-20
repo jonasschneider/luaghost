@@ -16,14 +16,15 @@
 #include "replay.h"
 #include "gameplayer.h"
 #include "gameprotocol.h"
-
-
 #include "boost/filesystem/operations.hpp"
+
+#include "lua/clua.h"
 
 using namespace std;
 
+// CLuaContextGHost
 
-void CLuaContextGHost::ApplyToScript(CLuaScript* script) {
+void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
   using namespace luabind;
   
   module(script->getLua())
@@ -54,6 +55,7 @@ void CLuaContextGHost::ApplyToScript(CLuaScript* script) {
       .def("SendAllChat", (void(CBaseGame::*)(string))&CBaseGame::SendAllChat)
   ];
 }
+
 
 // CLuaScript
 
@@ -104,37 +106,16 @@ void CLuaScript :: Call(const luabind::object &method) {
 }
 
 
-
-
-void CLuaScript :: Log(string msg) {
-  std::cout << "[" << m_Filename << "] " << msg << std::endl;
-}
-
-void CLuaScript :: Lua_Register(string handlerName, const luabind::object &callback) {
-  m_Callbacks.push_back(new CLuaCallback(handlerName, callback));
-}
-
-void CLuaScript :: Lua_Unregister(const luabind::object &callback) {
-  
-}
-
 bool CLuaScript :: HasFunction(const char *name) {
   using namespace luabind;
   
-  object g = globals(m_Lua);
-  object func = g[name];
+  object func = globals(m_Lua)[name];
   
-  if( func )
-  {
-          if( type(func) == LUA_TFUNCTION )
-                  return true;
-  }
-  
-  return false;
+  return func && type(func) == LUA_TFUNCTION;
 }
 
+
 void CLuaScript :: Fire(CLuaEvent* event) {
-  Log(string("[LUA] Firing ").append(event->GetLuaName()));
   using namespace luabind;
   for( vector<CLuaCallback *> :: iterator i = m_Callbacks.begin( ); i != m_Callbacks.end( ); i++ ) {
     if((*i)->MatchesHandlerName(event->GetLuaName())) {
@@ -149,14 +130,22 @@ void CLuaScript :: Fire(CLuaEvent* event) {
 }
 
 
-
-
-// CLuaCallback
-
-bool CLuaCallback :: MatchesHandlerName(string n_HandlerName) {
-  return m_HandlerName == n_HandlerName;
+void CLuaScript :: Log(string msg) {
+  std::cout << "[" << m_Filename << "] " << msg << std::endl;
 }
 
+
+void CLuaScript :: Lua_Register(string handlerName, const luabind::object &callback) {
+  m_Callbacks.push_back(new CLuaCallback(handlerName, callback));
+}
+
+
+void CLuaScript :: Lua_Unregister(const luabind::object &callback) {
+  
+}
+
+
+// CLuaScriptManager
 
 bool CLuaScriptManager :: LoadScript(string fileName) {
   CLuaScript* new_script = new CLuaScript(fileName);
@@ -173,6 +162,7 @@ bool CLuaScriptManager :: LoadScript(string fileName) {
   } else
     return false;
 }
+
 
 bool CLuaScriptManager :: LoadScriptsFromDirectory(string dirName) {
   using namespace boost::filesystem;
@@ -201,13 +191,28 @@ bool CLuaScriptManager :: LoadScriptsFromDirectory(string dirName) {
   return true;
 }
 
+
 void CLuaScriptManager :: Fire(CLuaEvent* event) {
   cout << "[LUA] Firing " << event->GetLuaName() << endl;
   for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
     (*i)->Fire(event);
 }
-  
 
-bool CLuaScriptManager :: UnloadScript(string fileName) {
-  
+CLuaScript* CLuaScriptManager :: GetScriptByFilename(string Filename) {
+  for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ ) {
+    if((*i)->GetFilename() == Filename) {
+      return (*i);
+    }
+  }
+}
+
+bool CLuaScriptManager :: UnloadScript(string Filename) {
+  for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ ) {
+    if((*i)->GetFilename() == Filename) {
+      m_Scripts.erase(i);
+      return true;
+    }
+  }
+  cout << "[LUA] Could not unload; " << Filename << " is not loaded." << endl;
+  return false;
 }

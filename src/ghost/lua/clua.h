@@ -11,49 +11,38 @@ extern "C" {
 
 #include "lua/clua_events.h"
 #include <luabind/luabind.hpp>
-#include <stdio.h>
-#include <string>
-#include <iostream>
-#include <sstream>
 
 class CLuaCallback {
-public:
-  CLuaCallback(string n_HandlerName, luabind::object n_Callback) : m_HandlerName(n_HandlerName), m_Callback(n_Callback) {}
-  bool MatchesHandlerName(string n_handlerName);
-  template <class argtype> void Fire(argtype argument) {
-    luabind::call_function<void>(m_Callback, argument);
-  }
-  
-  void Fire() {
-    luabind::call_function<void>(m_Callback);
-  }
-  
-  template <class argtype1, class argtype2> void Fire(argtype1 argument1, argtype2 argument2) {
-    luabind::call_function<void>(m_Callback, argument1, argument2);
-  }
-
-  
 protected:
   string m_HandlerName;
   luabind::object m_Callback;
+
+public:
+  CLuaCallback(string n_HandlerName, luabind::object n_Callback) : m_HandlerName(n_HandlerName), m_Callback(n_Callback) {}
+  bool MatchesHandlerName(string n_HandlerName) { return m_HandlerName == n_HandlerName; }
+
+  void Fire(CLuaEvent* event) { luabind::call_function<void>(m_Callback, event); }
 };
+
 
 class CLuaScript {
 protected:
   lua_State* m_Lua;
   vector<CLuaCallback *> m_Callbacks;
   string m_Filename;
+  
+  
+
 public:
   CLuaScript(string n_Filename) : m_Filename(n_Filename) {}
   lua_State* getLua()  { return m_Lua; }
-  
+  string GetFilename() { return m_Filename; }
   
   bool Load();
   void Call(const char* method);
   void Call(const luabind::object &method);
   void Fire(CLuaEvent* event);
   bool HasFunction(const char* name);
-  
   
   // Lua-accessible functions
   void Lua_Register(string handlerName, const luabind::object &callback);
@@ -70,6 +59,12 @@ public: void ApplyToScript(CLuaScript* script);
 };
 
 class CLuaScriptManager {
+protected:
+  vector <CLuaScript *> m_Scripts;
+  CLuaContext* m_Context;
+  
+  CLuaScript* GetScriptByFilename(string Filename);
+
 public:
   CLuaScriptManager(CLuaContext* n_Context) : m_Context(n_Context) {}
   
@@ -77,9 +72,5 @@ public:
   bool LoadScript(string fileName);
   bool UnloadScript(string fileName);
   void Fire(CLuaEvent* event);
-  
-protected:
-  vector <CLuaScript *> m_Scripts;
-  CLuaContext* m_Context;
 };
 #endif
