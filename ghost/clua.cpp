@@ -1,4 +1,25 @@
+#include "includes.h"
 #include "ghost.h"
+#include "game_base.h"
+#include "gameplayer.h"
+#include "game.h"
+#include "ghost.h"
+#include "util.h"
+#include "config.h"
+#include "language.h"
+#include "socket.h"
+#include "ghostdb.h"
+#include "bnet.h"
+#include "map.h"
+#include "packed.h"
+#include "savegame.h"
+#include "replay.h"
+#include "gameplayer.h"
+#include "gameprotocol.h"
+
+
+#include "ghost.h"
+
 using namespace std;
 
 
@@ -8,7 +29,11 @@ void CLuaContextGHost::ApplyToScript(CLuaScript* script) {
   module(script->getLua())
   [
     class_<CGHost>("GHost")
-      .def_readonly("version", &CGHost::m_Version)
+      .def_readonly("version", &CGHost::m_Version),
+    class_<CGamePlayer>("GamePlayer")
+      .def("GetName", &CGamePlayer::GetName),
+    class_<CBaseGame>("BaseGame")
+      .def("SendAllChat", (void(CBaseGame::*)(string))&CBaseGame::SendAllChat)
   ];
 }
 

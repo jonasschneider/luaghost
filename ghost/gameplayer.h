@@ -133,7 +133,7 @@ public:
 	virtual ~CGamePlayer( );
 
 	unsigned char GetPID( )						{ return m_PID; }
-	string GetName( )							{ return m_Name; }
+	const string GetName( )							{ return m_Name; }
 	BYTEARRAY GetInternalIP( )					{ return m_InternalIP; }
 	unsigned int GetNumPings( )					{ return m_Pings.size( ); }
 	unsigned int GetNumCheckSums( )				{ return m_CheckSums.size( ); }

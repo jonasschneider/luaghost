@@ -19,6 +19,14 @@ public:
   template <class argtype> void Fire(argtype argument) {
     luabind::call_function<void>(m_Callback, argument);
   }
+  
+  void Fire() {
+    luabind::call_function<void>(m_Callback);
+  }
+  
+  template <class argtype1, class argtype2> void Fire(argtype1 argument1, argtype2 argument2) {
+    luabind::call_function<void>(m_Callback, argument1, argument2);
+  }
 
   
 protected:
@@ -47,12 +55,27 @@ public:
   void Log(string msg); // only to be used from inside and Lua!
   
   template <class argtype> void Fire(string handlerName, argtype argument) {
-    Log(string("[LUUA] Firing ").append(handlerName));
+    Log(string("[LUA] Firing ").append(handlerName));
     using namespace luabind;
     for( vector<CLuaCallback *> :: iterator i = m_Callbacks.begin( ); i != m_Callbacks.end( ); i++ ) {
       if((*i)->MatchesHandlerName(handlerName)) {
         try {
           (*i)->Fire(argument);
+        } catch(error& e) {
+          string msg = string("Lua Error while dispatching handler [") + handlerName + string("]: ");
+          Log(msg.append(lua_tostring(e.state(), -1)));
+        }
+      }
+    }
+  }
+  
+  void Fire(string handlerName) {
+    Log(string("[LUA] Firing ").append(handlerName));
+    using namespace luabind;
+    for( vector<CLuaCallback *> :: iterator i = m_Callbacks.begin( ); i != m_Callbacks.end( ); i++ ) {
+      if((*i)->MatchesHandlerName(handlerName)) {
+        try {
+          (*i)->Fire();
         } catch(error& e) {
           string msg = string("Lua Error while dispatching handler [") + handlerName + string("]: ");
           Log(msg.append(lua_tostring(e.state(), -1)));
@@ -80,6 +103,41 @@ public:
       Log(string("Lua Error: ").append(lua_tostring(e.state(), -1)));
     }
   }
+  
+  template<class argtype1, class argtype2> void Fire(string handlerName, argtype1 argument1, argtype2 argument2) {
+    Log(string("[LUUA] Firing ").append(handlerName));
+    using namespace luabind;
+    for( vector<CLuaCallback *> :: iterator i = m_Callbacks.begin( ); i != m_Callbacks.end( ); i++ ) {
+      if((*i)->MatchesHandlerName(handlerName)) {
+        try {
+          (*i)->Fire(argument1, argument2);
+        } catch(error& e) {
+          string msg = string("Lua Error while dispatching handler [") + handlerName + string("]: ");
+          Log(msg.append(lua_tostring(e.state(), -1)));
+        }
+      }
+    }
+  }
+  
+  template<class argtype1, class argtype2> void Call(const luabind::object &method, argtype1 argument1, argtype2 argument2) {
+    using namespace luabind;
+    
+    try {
+      call_function<void>(method, argument1, argument2);
+    } catch(error& e) {
+      Log(string("Lua Error: ").append(lua_tostring(e.state(), -1)));
+    }
+  }
+  
+  template<class argtype1, class argtype2> void Call(const char* method, argtype1 argument1, argtype2 argument2) {
+    using namespace luabind;
+    
+    try {
+      call_function<void>(m_Lua, method, argument1, argument2);
+    } catch(error& e) {
+      Log(string("Lua Error: ").append(lua_tostring(e.state(), -1)));
+    }
+  }
 
   
 };
@@ -98,10 +156,22 @@ public:
   bool LoadScript(string fileName);
   bool UnloadScript(string fileName);
   
+  void Fire(string handlerName) {
+    cout << "[LUA] Firing " << handlerName << endl;
+    for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
+      (*i)->Fire(handlerName);
+  }
+  
   template<class argtype> void Fire(string handlerName, argtype argument) {
-    cout << "[LUUA] Firing " << handlerName << endl;
+    cout << "[LUA] Firing " << handlerName << endl;
     for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
       (*i)->Fire(handlerName, argument);
+  }
+  
+  template<class argtype1, class argtype2> void Fire(string handlerName, argtype1 argument1, argtype2 argument2) {
+    cout << "[LUA] Firing " << handlerName << endl;
+    for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
+      (*i)->Fire(handlerName, argument1, argument2);
   }
   
   

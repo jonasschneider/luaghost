@@ -2062,11 +2062,14 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 	// send slot info to everyone, so the new player gets this info twice but everyone else still needs to know the new slot layout
 
 	SendAllSlotInfo( );
-
+  
+	// trigger Lua
+	m_GHost->FireScriptEvent("PlayerJoined", this, Player);
+  
 	// send a welcome message
-
-	SendWelcomeMessage( Player );
-
+  
+  SendWelcomeMessage( Player );
+	
 	// if spoof checks are required and we won't automatically spoof check this player then tell them how to spoof check
 	// e.g. if automatic spoof checks are disabled, or if automatic spoof checks are done on admins only and this player isn't an admin
 
@@ -2122,6 +2125,8 @@ void CBaseGame :: EventPlayerJoined( CPotentialPlayer *potential, CIncomingJoinP
 		SendAllChat( m_GHost->m_Language->GameLocked( ) );
 		m_Locked = true;
 	}
+	
+	
 }
 
 void CBaseGame :: EventPlayerJoinedWithScore( CPotentialPlayer *potential, CIncomingJoinPlayer *joinPlayer, double score )

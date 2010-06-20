@@ -47,6 +47,19 @@ class CGHost
 {
 public:
   
+  CLuaScriptManager* m_ScriptManager;
+  
+  void FireScriptEvent(string handlerName) {
+    m_ScriptManager->Fire(handlerName);
+  }
+  
+  template<class argtype> void FireScriptEvent(string handlerName, argtype argument) {
+    m_ScriptManager->Fire(handlerName, argument);
+  }
+  
+  template<class argtype1, class argtype2> void FireScriptEvent(string handlerName, argtype1 argument1, argtype2 argument2) {
+    m_ScriptManager->Fire(handlerName, argument1, argument2);
+  }
   // COMMON
   string m_Version;						// GHost++ version string
   bool m_AllGamesFinished;				// if all games finished (used when exiting nicely)

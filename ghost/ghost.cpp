@@ -238,18 +238,7 @@ int main( int argc, char **argv )
 
 	if( argc > 1 && argv[1] )
 		gCFGFile = argv[1];
-  
-	CONSOLE_Print("[LUA] Starting up");
-	
-	
-  CLuaScriptManager* m_ScriptManager = new CLuaScriptManager(new CLuaContextGHost);
-  m_ScriptManager->LoadScript("main.lua");
-  
-	CONSOLE_Print("[LUA] Ready!");
-  /*
 
-  ];*/
-  
 	// read config file
 
 	CConfig CFG;
@@ -362,8 +351,6 @@ int main( int argc, char **argv )
 
 	gGHost = new CGHost( &CFG );
   
-	m_ScriptManager->Fire("GHostInitialized", gGHost);
-	
 	while( 1 )
 	{
 		// block for 50ms on all sockets - if you intend to perform any timed actions more frequently you should change this
@@ -376,6 +363,7 @@ int main( int argc, char **argv )
 	// shutdown ghost
 
 	CONSOLE_Print( "[GHOST] shutting down" );
+	
 	delete gGHost;
 	gGHost = NULL;
 
@@ -702,10 +690,22 @@ CGHost :: CGHost( CConfig *CFG )
 #else
 	CONSOLE_Print( "[GHOST] GHost++ Version " + m_Version + " (without MySQL support)" );
 #endif
+	  
+	
+	// Initialize Lua
+	CONSOLE_Print("[LUA] Starting up");
+	
+  m_ScriptManager = new CLuaScriptManager(new CLuaContextGHost);
+  m_ScriptManager->LoadScript("main.lua");
+  FireScriptEvent("GHostInitialized", this);
+  
+	CONSOLE_Print("[LUA] Ready!");
 }
 
 CGHost :: ~CGHost( )
 {
+  FireScriptEvent("GHostShuttingDown", this);
+  
 	delete m_UDPSocket;
 	delete m_ReconnectSocket;
 
