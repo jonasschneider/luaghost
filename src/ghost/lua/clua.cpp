@@ -34,17 +34,17 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
     class_<CLuaGHostInitalizedEvent, CLuaEvent>("GHostInitalizedEvent")
       .def("GetGHost", &CLuaGHostInitalizedEvent::GetGHost),
       
-    class_<CLuaGHostShuttingDownEvent, CLuaEvent>("CLuaGHostShuttingDownEvent")
+    class_<CLuaGHostShuttingDownEvent, CLuaEvent>("GHostShuttingDownEvent")
       .def("GetGHost", &CLuaGHostShuttingDownEvent::GetGHost),
     
-    class_<CLuaPlayerJoinedEvent, CLuaEvent>("CLuaPlayerJoinedEvent")
+    class_<CLuaPlayerJoinedEvent, CLuaEvent>("PlayerJoinedEvent")
       .def("GetGame", &CLuaPlayerJoinedEvent::GetGame)
       .def("GetPlayer", &CLuaPlayerJoinedEvent::GetPlayer),
       
-    class_<CLuaPlayersChatsIngameEvent, CLuaEvent>("CLuaPlayersChatsIngameEvent")
-      .def("GetGame", &CLuaPlayersChatsIngameEvent::GetGame)
-      .def("GetPlayer", &CLuaPlayersChatsIngameEvent::GetPlayer)
-      .def("GetMessage", &CLuaPlayersChatsIngameEvent::GetMessage),
+    class_<CLuaGamePlayerChatEvent, CLuaEvent>("GamePlayerChatEvent")
+      .def("GetGame", &CLuaGamePlayerChatEvent::GetGame)
+      .def("GetPlayer", &CLuaGamePlayerChatEvent::GetPlayer)
+      .def("GetMessage", &CLuaGamePlayerChatEvent::GetMessage),
 
     // Domain classes
     class_<CGHost>("GHost")

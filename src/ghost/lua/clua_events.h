@@ -45,17 +45,20 @@ public:
   CGamePlayer* GetPlayer() { return m_Player; }
 };
 
-/* Called when a player chats ingame (not in lobby) */
-class CLuaPlayersChatsIngameEvent : public CLuaEvent {
+/* Called when a player chats ingame or in the lobby */
+class CLuaGamePlayerChatEvent : public CLuaEvent {
 protected:
   CBaseGame* m_Game;
   CGamePlayer* m_Player;
   std::string m_Message;
+  bool m_Ingame;
+
 public:
-  CLuaPlayersChatsIngameEvent(CBaseGame* n_Game, CGamePlayer* n_Player, std::string n_Message) : m_Game(n_Game), m_Player(n_Player), m_Message(n_Message) {}
-  std::string GetLuaName() { return "PlayersChatsIngame"; }
+  CLuaGamePlayerChatEvent(CBaseGame* n_Game, CGamePlayer* n_Player, std::string n_Message, bool n_Ingame) : m_Game(n_Game), m_Player(n_Player), m_Message(n_Message), m_Ingame(n_Ingame) {}
+  std::string GetLuaName() { return "GamePlayerChat"; }
   CBaseGame* GetGame() { return m_Game; }
   CGamePlayer* GetPlayer() { return m_Player; }
   std::string GetMessage() { return m_Message; }
+  bool GetIngame() { return m_Ingame; }
 };
 #endif

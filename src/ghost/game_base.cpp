@@ -2799,7 +2799,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 
 			if( !ExtraFlags.empty( ) )
 			{
-        m_GHost->FireScriptEvent(new CLuaPlayersChatsIngameEvent(this, player, chatPlayer->GetMessage()));
+        m_GHost->FireScriptEvent(new CLuaGamePlayerChatEvent(this, player, chatPlayer->GetMessage(), true));
         
 				if( ExtraFlags[0] == 0 )
 				{
@@ -2830,6 +2830,7 @@ void CBaseGame :: EventPlayerChatToHost( CGamePlayer *player, CIncomingChatPlaye
 			}
 			else
 			{
+			  m_GHost->FireScriptEvent(new CLuaGamePlayerChatEvent(this, player, chatPlayer->GetMessage(), false));
 				// this is a lobby message, print it to the console
 				CONSOLE_Print( "[GAME: " + m_GameName + "] [Lobby] [" + player->GetName( ) + "]: " + chatPlayer->GetMessage( ) );
 
