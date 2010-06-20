@@ -1,10 +1,10 @@
 ====================
-GHost++ Version 17.1
+LuaGHost
 ====================
 
-GHost++ is a port of the original GHost project to C++. It was ported by Trevor Hogan.
-It contains many enhancements and fixes that were not present in the original GHost.
-You can compile and run GHost++ on Windows, Linux, and OS X with this release although the code should be mostly portable to other operating systems with only very minor changes.
+LuaGHost is the GHost++ Warcraft III hosting bot with a powerful Lua scripting framework added on top.
+
+You can compile and run LuaGHost on most Unix derivates. Compiling on Windows and OS X would take a lot of work at this moment as on these platforms, it is complicated to create the bindings between C++ and Lua.
 The official GHost++ forums are currently located at http://forum.codelain.com
 The official GHost++ SVN repository is currently located at http://code.google.com/p/ghostplusplus/
 
