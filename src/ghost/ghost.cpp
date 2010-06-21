@@ -40,6 +40,7 @@
 #include "game.h"
 #include "game_admin.h"
 
+#include "lua/clua.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -851,6 +852,8 @@ bool CGHost :: Update( long usecBlock )
 			m_Reconnect = false;
 		}
 	}
+	
+	FireScriptEvent(new CLuaGHostUpdateEvent(this), true);
 
 	unsigned int NumFDs = 0;
 

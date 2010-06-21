@@ -62,4 +62,15 @@ public:
   std::string GetMessage() { return m_Message; }
   bool GetIngame() { return m_Ingame; }
 };
+
+
+/* Called on every update cycle */
+class CLuaGHostUpdateEvent : public CLuaEvent {
+protected:
+  CGHost* m_GHost;
+public:
+  CLuaGHostUpdateEvent(CGHost* n_GHost) : m_GHost(n_GHost) {}
+  std::string GetLuaName() { return "GHostUpdate"; }
+  CGHost* GetGHost() { return m_GHost; }
+};
 #endif

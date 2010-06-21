@@ -221,6 +221,10 @@ void CLuaScriptManager :: ReloadScripts() {
 }
 
 void CLuaScriptManager :: Fire(CLuaEvent* event) {
+  Fire(event, false);
+}
+
+void CLuaScriptManager :: Fire(CLuaEvent* event, bool silent) {
   cout << "[LUA] Firing " << event->GetLuaName() << endl;
   for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
     (*i)->Fire(event);

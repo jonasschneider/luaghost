@@ -45,12 +45,12 @@ class CConfig;
 
 class CGHost
 {
-public:
-  
+protected:
   CLuaScriptManager* m_ScriptManager;
-  
-  void FireScriptEvent(CLuaEvent* event) {
-    m_ScriptManager->Fire(event);
+
+public:
+  void FireScriptEvent(CLuaEvent* event, bool silent = false) {
+    m_ScriptManager->Fire(event, silent);
   }
   void ReloadScripts() {
     m_ScriptManager->ReloadScripts();

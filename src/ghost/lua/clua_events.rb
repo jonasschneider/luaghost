@@ -85,6 +85,10 @@ events = [
     a("Player", "CGamePlayer*"),
     a("Message", "std::string"),
     a("Ingame", "bool")
+  ]),
+  
+  Event.new("GHostUpdate", "Called on every update cycle", [
+    a("GHost", "CGHost*")
   ])
 ]
 puts HEADER
