@@ -12,16 +12,16 @@ public:
   
 };
 
-
 /* Called when GHost is initialized */
 class CLuaGHostInitalizedEvent : public CLuaEvent {
 protected:
   CGHost* m_GHost;
 public:
   CLuaGHostInitalizedEvent(CGHost* n_GHost) : m_GHost(n_GHost) {}
-  std::string GetLuaName() { return "GHostInitialized"; }
+  std::string GetLuaName() { return "GHostInitalized"; }
   CGHost* GetGHost() { return m_GHost; }
 };
+
 
 /* Called when GHost is shutting down */
 class CLuaGHostShuttingDownEvent : public CLuaEvent {
@@ -32,6 +32,7 @@ public:
   std::string GetLuaName() { return "GHostShuttingDown"; }
   CGHost* GetGHost() { return m_GHost; }
 };
+
 
 /* Called when a player has successfully joined a game (includes admin game) */
 class CLuaPlayerJoinedEvent : public CLuaEvent {
@@ -45,14 +46,14 @@ public:
   CGamePlayer* GetPlayer() { return m_Player; }
 };
 
-/* Called when a player chats ingame or in the lobby */
+
+/* Called when a player chats ingame or in a game lobby */
 class CLuaGamePlayerChatEvent : public CLuaEvent {
 protected:
   CBaseGame* m_Game;
   CGamePlayer* m_Player;
   std::string m_Message;
   bool m_Ingame;
-
 public:
   CLuaGamePlayerChatEvent(CBaseGame* n_Game, CGamePlayer* n_Player, std::string n_Message, bool n_Ingame) : m_Game(n_Game), m_Player(n_Player), m_Message(n_Message), m_Ingame(n_Ingame) {}
   std::string GetLuaName() { return "GamePlayerChat"; }
