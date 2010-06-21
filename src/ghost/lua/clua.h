@@ -24,21 +24,24 @@ public:
   void Fire(CLuaEvent* event) { luabind::call_function<void>(m_Callback, event); }
 };
 
+class CLuaContext;
 
 class CLuaScript {
 protected:
   lua_State* m_Lua;
   vector<CLuaCallback *> m_Callbacks;
   string m_Filename;
+  CLuaContext* m_Context;
   
-  
-
 public:
-  CLuaScript(string n_Filename) : m_Filename(n_Filename) {}
+  CLuaScript(string n_Filename, CLuaContext* n_Context) : m_Filename(n_Filename), m_Context(n_Context) {}
+  ~CLuaScript();
   lua_State* getLua()  { return m_Lua; }
   string GetFilename() { return m_Filename; }
   
   bool Load();
+  void Unload();
+  bool Reload();
   void Call(const char* method);
   void Call(const luabind::object &method);
   void Fire(CLuaEvent* event);
@@ -50,6 +53,7 @@ public:
   void Log(string msg); // only to be used from inside and Lua!
 };
 
+
 class CLuaContext {
 public: virtual void ApplyToScript(CLuaScript* script) {}
 };
@@ -57,6 +61,7 @@ public: virtual void ApplyToScript(CLuaScript* script) {}
 class CLuaContextGHost : public CLuaContext {
 public: void ApplyToScript(CLuaScript* script);
 };
+
 
 class CLuaScriptManager {
 protected:
@@ -72,5 +77,6 @@ public:
   bool LoadScript(string fileName);
   bool UnloadScript(string fileName);
   void Fire(CLuaEvent* event);
+  void ReloadScripts();
 };
 #endif

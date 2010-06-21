@@ -335,11 +335,18 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 		/*****************
 		* ADMIN COMMANDS *
 		******************/
-
+		
+    //
+		// !RELOADSCRIPTS
+		//
+		if( Command == "reloadscripts" ) {
+		  m_GHost->ReloadScripts();
+		}
+		
 		//
 		// !ADDADMIN
 		//
-
+    
 		if( Command == "addadmin" && !Payload.empty( ) )
 		{
 			// extract the name and the server

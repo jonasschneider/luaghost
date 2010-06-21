@@ -52,6 +52,9 @@ public:
   void FireScriptEvent(CLuaEvent* event) {
     m_ScriptManager->Fire(event);
   }
+  void ReloadScripts() {
+    m_ScriptManager->ReloadScripts();
+  }
   
   template<class argtype> void FireScriptEvent(string handlerName, argtype argument) {
     m_ScriptManager->Fire(handlerName, argument);

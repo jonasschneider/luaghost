@@ -69,6 +69,7 @@ bool CLuaScript :: Load() {
 	luaL_openlibs(m_Lua);
   luabind::open(m_Lua);
   
+  
   int retval = luaL_dofile(m_Lua, m_Filename.c_str());
   if(retval == LUA_ERRSYNTAX)
     Log("Syntax error while loading!");
@@ -84,7 +85,32 @@ bool CLuaScript :: Load() {
         .def("Log", &CLuaScript::Log)
     ];
     luabind::globals(m_Lua)["Controller"] = this;
+    
+    m_Context->ApplyToScript(this);
+    if(HasFunction("init")) {
+      Call("init");
+      return true;
+    } else {
+      Log("No init function defined!");
+    }
   }
+  return false;
+}
+
+CLuaScript :: ~CLuaScript() {
+  Unload();
+}
+
+void CLuaScript :: Unload() {
+  m_Callbacks.clear();
+  lua_close(m_Lua);
+  Log("Unloaded.");
+}
+
+bool CLuaScript :: Reload() {
+  Log("Reloading ...");
+  Unload();
+  return Load();
 }
 
 
@@ -152,16 +178,9 @@ void CLuaScript :: Lua_Unregister(const luabind::object &callback) {
 // CLuaScriptManager
 
 bool CLuaScriptManager :: LoadScript(string fileName) {
-  CLuaScript* new_script = new CLuaScript(fileName);
+  CLuaScript* new_script = new CLuaScript(fileName, m_Context);
   if(new_script->Load()) {
-    m_Context->ApplyToScript(new_script);
-    if(new_script->HasFunction("init")) {
-      new_script->Call("init");
-      m_Scripts.push_back(new_script);
-    } else {
-      cout << "[LUA] " << fileName << " has no 'init' function!";
-      return false;
-    }
+    m_Scripts.push_back(new_script);
     return true;
   } else
     return false;
@@ -195,6 +214,10 @@ bool CLuaScriptManager :: LoadScriptsFromDirectory(string dirName) {
   return true;
 }
 
+void CLuaScriptManager :: ReloadScripts() {
+  for( vector<CLuaScript *> :: iterator i = m_Scripts.begin( ); i != m_Scripts.end( ); i++ )
+    (*i)->Reload();
+}
 
 void CLuaScriptManager :: Fire(CLuaEvent* event) {
   cout << "[LUA] Firing " << event->GetLuaName() << endl;
