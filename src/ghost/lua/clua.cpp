@@ -49,10 +49,14 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
     // Domain classes
     class_<CGHost>("GHost")
       .def_readonly("version", &CGHost::m_Version),
+    
     class_<CGamePlayer>("GamePlayer")
       .def("GetName", &CGamePlayer::GetName),
+    
     class_<CBaseGame>("BaseGame")
       .def("SendAllChat", (void(CBaseGame::*)(string))&CBaseGame::SendAllChat)
+      .def("GetTeamOfPlayer", &CBaseGame::GetTeamOfPlayer)
+      .def("GetHostCounter", &CBaseGame::GetHostCounter)
   ];
 }
 
