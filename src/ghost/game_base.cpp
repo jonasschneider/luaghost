@@ -4633,3 +4633,11 @@ unsigned char CBaseGame :: GetTeamOfPlayer(CGamePlayer* player) {
     return m_Slots[SID].GetTeam();
   }
 }
+
+int CBaseGame :: GetNumPlayersInTeam(unsigned char team) {
+  int num = 0;
+  for( vector<CGamePlayer *> :: iterator i = m_Players.begin( ); i != m_Players.end( ); i++ )
+    if(GetTeamOfPlayer(*i) == team)
+      num++;
+  return num;
+}

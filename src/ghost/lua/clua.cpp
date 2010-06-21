@@ -57,6 +57,7 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
       .def("SendAllChat", (void(CBaseGame::*)(string))&CBaseGame::SendAllChat)
       .def("GetTeamOfPlayer", &CBaseGame::GetTeamOfPlayer)
       .def("GetHostCounter", &CBaseGame::GetHostCounter)
+      .def("GetNumPlayersInTeam", &CBaseGame::GetNumPlayersInTeam)
   ];
 }
 

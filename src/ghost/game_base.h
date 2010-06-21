@@ -229,9 +229,10 @@ public:
 	virtual void EventGameLoaded( );
 
 	// other functions
-
-	virtual unsigned char GetSIDFromPID( unsigned char PID );
 	virtual unsigned char GetTeamOfPlayer(CGamePlayer* player);
+	virtual int GetNumPlayersInTeam(unsigned char team);
+	  
+	virtual unsigned char GetSIDFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromPID( unsigned char PID );
 	virtual CGamePlayer *GetPlayerFromSID( unsigned char SID );
 	virtual CGamePlayer *GetPlayerFromName( string name, bool sensitive );

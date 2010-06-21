@@ -15,7 +15,7 @@ function insult_player(event)
   if forfeit_register[game_id] == nil then forfeit_register[game_id] = {} end
   if forfeit_register[game_id][team] == nil then forfeit_register[game_id][team] = {} end
   team_register = forfeit_register[game_id][team]
-    
+  
   found = false
   for i=0,10 do
     if team_register[i] == player:GetName() then found = true end
@@ -23,8 +23,9 @@ function insult_player(event)
   if not found then
     table.insert(team_register, player:GetName())
     new_count = #team_register
+    total_count = game:GetNumPlayersInTeam(team)
     
-    game:SendAllChat(player:GetName() .. " just forfeited. " .. tostring(new_count) .. " players have forfeited so far.")
+    game:SendAllChat(player:GetName() .. " just forfeited. " .. tostring(new_count) .. "/" .. tostring(total_count) .. " players have forfeited so far.")
   else
     game:SendAllChat("You have already forfeited, " .. player:GetName())
   end
