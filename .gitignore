@@ -1,5 +1,6 @@
 *.o
 src/ghost/ghost++
+root/ghost++
 root/ghost.dbs
 root/ghost.log
 root/ghost.cfg
