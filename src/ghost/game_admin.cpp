@@ -1264,8 +1264,11 @@ bool CAdminGame :: EventPlayerBotCommand( CGamePlayer *player, string command, s
 			}
 		}
 	}
-	else
+	else {
 		CONSOLE_Print( "[ADMINGAME] user [" + User + "] sent command [" + Command + "] with payload [" + Payload + "]" );
+		if(Command != "password")
+		  SendChat(player, "Please log in using !password.");
+	}
 
 	/*********************
 	* NON ADMIN COMMANDS *
