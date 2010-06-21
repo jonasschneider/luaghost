@@ -4626,3 +4626,10 @@ void CBaseGame :: DeleteFakePlayer( )
 	SendAllSlotInfo( );
 	m_FakePlayerPID = 255;
 }
+
+unsigned char CBaseGame :: GetTeamOfPlayer(CGamePlayer* player) {
+  unsigned char SID = GetSIDFromPID(player->GetPID());
+  if(SID != 255) {
+    return m_Slots[SID].GetTeam();
+  }
+}
