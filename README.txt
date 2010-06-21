@@ -4,9 +4,21 @@ LuaGHost
 
 LuaGHost is the GHost++ Warcraft III hosting bot with a powerful Lua scripting framework added on top.
 
-You can compile and run LuaGHost on most Unix derivates. Compiling on Windows and OS X would take a lot of work at this moment as on these platforms, it is complicated to create the bindings between C++ and Lua.
+You can compile and run LuaGHost on most Unix derivates. 
+Compiling on Windows and OS X would take a lot of work at this moment as on these platforms it is more complicated to create the bindings between C++ and Lua.
 The official GHost++ forums are currently located at http://forum.codelain.com
-The official GHost++ SVN repository is currently located at http://code.google.com/p/ghostplusplus/
+There you can find a thread about LuaGHost.
+
+====================
+Lua Script Examples
+====================
+Lua scripting works by adding callbacks to specific events in the lifecycle of the hostbot. To see some examples, please have a look into root/scripts. 
+There are some example scripts you can use to learn how to create your own.
+* version.lua - Very simple. Prints the GHost version to the console (always look there for much info!)
+* greeter.lua - Greets a joining player
+* insulter.lua - Reacts to player chat messages
+* forfeit.lua (Difficult!) - Allows players to forfeit a game and stores various data.
+
 
 ========
 Overview
