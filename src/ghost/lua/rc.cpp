@@ -1,9 +1,9 @@
 #include "includes.h"
 #include "socket.h"
 #include "ghost.h"
+#include "game_base.h"
 #include "util.h"
 #include "lua/rc.h"
-#include "boost/lexical_cast.hpp"
 
 
 
@@ -86,7 +86,7 @@ void CLuaRCClientHandler :: ProcessRequests() {
 		CLuaRCRequest *Request = m_Requests.front( );
 		m_Requests.pop( );
 		
-		BYTEARRAY Body = BYTEARRAY();;
+		BYTEARRAY Body = BYTEARRAY();
 		
 		switch( Request->GetCommandID() )
 		{
@@ -97,7 +97,17 @@ void CLuaRCClientHandler :: ProcessRequests() {
 		  else
 		    Status = RC_RESPONSE_STATUS_BUSY;
 		  Body = UTIL_CreateByteArray(Status);
+		  break;
+		  
+		  
+    case RC_REQUEST_GAMENAME:
+      if(m_GHost->m_CurrentGame) {
+        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetGameName(), false);
+      } else
+        Body = UTIL_CreateByteArray(RC_RESPONSE_ERROR);
     	break;
+    	
+    	
 		default:
 			std::cout << "[RC] Received invalid command ID=" << Request->GetCommandID() << std::endl;
 		}

@@ -3,7 +3,9 @@ require 'socket'      # Sockets are in standard library
 RC_HEADER_CONSTANT = 209
 
 RC_REQUEST_STATUS = 210
+RC_REQUEST_GAMENAME = 211
 
+RC_RESPONSE_ERROR = 29
 RC_RESPONSE_STATUS_AVAILABLE = 230
 RC_RESPONSE_STATUS_BUSY = 231
 
@@ -21,9 +23,9 @@ class RCClient
   end
   
   protected
-    def send_command(command, body = "")
+    def send_command(command, body = "", string_reply_body = false)
     write_command(command, body)
-    read_reply
+    read_reply(string_reply_body)
   end
   
   def write_command(command, body = "")
@@ -38,12 +40,12 @@ class RCClient
     @sock.write(packet.pack("C"*packet.size))
   end
 
-  def read_reply
+  def read_reply(string_body = false)
     throw "Invalid header constant" unless read_one  == RC_HEADER_CONSTANT
     command = read_one
     length = @sock.read(2).unpack("S")[0]
     body_length = length - 4
-    body = read(body_length)
+    body = read(body_length, string_body)
     
     reply = RCReply.new(command, body)
     puts "<< #{reply.inspect}"
@@ -54,9 +56,13 @@ class RCClient
     read(1)[0]
   end
   
-  def read(length)
+  def read(length, as_string = false)
     reply = @sock.read(length)
-    reply.unpack("C"*reply.length).map(&:to_i)
+    if as_string
+      reply
+    else
+      reply.unpack("C"*reply.length).map(&:to_i)
+    end
   end
 end
 
@@ -68,9 +74,25 @@ class GHostRCClient < RCClient
   def available?
     status == RC_RESPONSE_STATUS_AVAILABLE
   end
+  
+  def in_lobby?
+    !gamename.nil?
+  end
+  
+  def gamename
+    resp = send_command(RC_REQUEST_GAMENAME, "", true)
+    if resp.body.size == 1 && resp.body[0] == RC_RESPONSE_ERROR # most likely not ingame
+      return nil
+    else
+      return resp.body
+    end
+  end
 end
 
 c = GHostRCClient.new()
 
-puts c.status.inspect
-puts c.available?.inspect
+if c.in_lobby?
+  puts "The bot is in the lobby of game '#{c.gamename}'"
+else
+  puts "The bot isn't in any lobby"
+end
