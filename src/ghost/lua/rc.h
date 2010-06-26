@@ -15,33 +15,17 @@ public:
   int GetCommand() { return m_Command; }
 };
 
-class CLuaRCHandler {
+class CLuaRCClientHandler {
 protected:
   CGHost* m_GHost;
   CTCPSocket* m_Socket;
   std::queue<CLuaRCRequest *> m_Requests;
 
 public:
-  CLuaRCHandler(CTCPSocket* n_Socket, CGHost* n_GHost);
+  CLuaRCClientHandler(CTCPSocket* n_Socket, CGHost* n_GHost) : m_Socket(n_Socket), m_GHost(n_GHost) {}
   CTCPSocket *GetSocket() { return m_Socket; }
-  bool PrintInfo( void *fd, void *send_fd, int *nfds ) {
-    //std::cout << "My socket is at " << m_Socket << std::endl;
-    if(m_Socket) {
-      //std::cout << "Hello from handler" << std::endl;
-      if(m_Socket->HasError()) {
-        //std::cout << "My socket has an error." << std::endl;
-        //std::cout << "The error is" << m_Socket->GetErrorString() << std::endl;
-      } else {
-        //std::cout << "My socket is fine." << std::endl;
-        m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-        return true;
-      }
-    } else {
-      //std::cout << "My socket is NULL!" << std::endl;
-    }
-    return false;
-   }
   
+  bool SetFD( void *fd, void *send_fd, int *nfds );
   bool Update( void *fd, void *send_fd );
 };
 
@@ -49,7 +33,7 @@ class CLuaRC {
 protected:
   CGHost* m_GHost;
   CTCPServer* m_Socket;
-  vector<CLuaRCHandler *> m_Handlers;
+  vector<CLuaRCClientHandler *> m_Handlers;
 
 public:
   CLuaRC(CGHost* n_GHost);

@@ -1,32 +1,15 @@
 #include "includes.h"
 #include "socket.h"
 #include "util.h"
-#include "ghost.h"
-#include "util.h"
-#include "config.h"
-#include "language.h"
-#include "socket.h"
-#include "ghostdb.h"
-#include "bnet.h"
-#include "map.h"
-#include "packed.h"
-#include "savegame.h"
-#include "replay.h"
-#include "gameplayer.h"
-#include "gameprotocol.h"
-#include "game_base.h"
 #include "lua/rc.h"
 
-bool CLuaRCHandler :: Update( void *fd, void *send_fd ) {
-  //std::cout << "[RC] Getting new data" << std::endl;
+// CLuaRCClientHandler
+
+bool CLuaRCClientHandler :: Update( void *fd, void *send_fd ) {
 	if( !m_Socket )
 		return false;
-	int before_length = (int)((*(m_Socket->GetBytes())).length());
   m_Socket->DoRecv( (fd_set *)fd );
-  int after_length = (int)((*(m_Socket->GetBytes())).length());
-  if(after_length != before_length)
-    std::cout << "[RC] Data acquired" << std::endl;
-	// extract as many packets as possible from the socket's receive buffer and put them in the m_Packets queue
+	// extract as many packets as possible from the socket's receive buffer
 
 	string *RecvBuffer = m_Socket->GetBytes( );
 	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
@@ -73,73 +56,62 @@ bool CLuaRCHandler :: Update( void *fd, void *send_fd ) {
 	return true;
 }
 
+bool CLuaRCClientHandler :: SetFD( void *fd, void *send_fd, int *nfds ) {
+  if(!m_Socket) {
+    std::cout << "[RC] Encountered null pointer during SetFD!" << std::endl;
+    return false;
+  } else {
+    if(!m_Socket->GetConnected()) {
+      std::cout << "[RC] Connection closed" << std::endl;
+      return false;
+    } else {
+      if(m_Socket->HasError()) {
+        std::cout << "[RC] Socket error: " << m_Socket->GetErrorString() << std::endl;
+        return false;
+      } else {
+        m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
+        return true;
+      }
+    }
+  }
+}
+
+
+// CLuaRC
+
 unsigned int CLuaRC :: SetFD( void *fd, void *send_fd, int *nfds ) {
 	unsigned int NumFDs = 0;
-  //std::cout << "[RC] Setting fd" << std::endl;
-	if( m_Socket )
-	{
+	if(m_Socket) {
 		m_Socket->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
 		NumFDs++;
 	}
 	
-	for( vector<CLuaRCHandler *> :: iterator i = m_Handlers.begin( ); i != m_Handlers.end( ); i++ ) {
-	  if((*i)->PrintInfo(fd, send_fd, nfds))
+	for( vector<CLuaRCClientHandler *> :: iterator i = m_Handlers.begin( ); i != m_Handlers.end( ); ) {
+	  if((*i)->SetFD(fd, send_fd, nfds)) {
 	    NumFDs++;
-	  /*if((*i)->GetSocket() && !(*i)->GetSocket()->HasError()) {
-  		(*i)->GetSocket( )->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-  			NumFDs++;
-		}*/
-	}
-	/*
-	for( vector<CLuaRCHandler *> :: iterator i = m_Handlers.begin( ); i != m_Handlers.end( ); i++ ) {
-	  if(*i) {
-	    CLuaRCHandler* hand = (*i);
-	    CTCPSocket* csock = hand->GetSocket( );
-  		if( csock )
-  		{
-  		  if(csock->HasError()) {
-  		    std::cout << "Socket Error: " << csock->GetErrorString() << std::endl;
-  		    continue;
-  	    }
-  		  //std::cout << "[RC] Setting for client socket..." << std::endl;
-  		  
-  			csock->SetFD( (fd_set *)fd, (fd_set *)send_fd, nfds );
-  			//std::cout << "[RC] Set." << std::endl;
-  			NumFDs++;
-  		}
-		}
-	}*/
-  //std::cout << "[RC] Finished setting" << std::endl;
+	    i++;
+	  } else {
+	    delete *i;
+	    i = m_Handlers.erase(i);
+    }
+  }
 	return NumFDs;
 }
 
-CLuaRCHandler :: CLuaRCHandler(CTCPSocket* n_Socket, CGHost* n_GHost) {
-  std::cout << "[RC] Initializing handler, socket address " << n_Socket << std::endl; 
-  m_Socket = n_Socket;
-  m_GHost = n_GHost;
-}
-
 void CLuaRC :: Update( void *fd, void *send_fd ) {
-  //std::cout << "[RC] Updating connections" << std::endl;
-	for( vector<CLuaRCHandler *> :: iterator i = m_Handlers.begin( ); i != m_Handlers.end( ); i++ )
+  // Update client connections
+	for( vector<CLuaRCClientHandler *> :: iterator i = m_Handlers.begin( ); i != m_Handlers.end( ); i++ )
 	  (*i)->Update(fd, send_fd);
 	
+	// Accept new connections
 	if( m_Socket ) {
   	CTCPSocket *NewSocket = m_Socket->Accept( (fd_set *)fd );
     
-  	//std::cout << "[RC] Updated existing connections" << std::endl;
-  	if( NewSocket )
-  	{
-  	  std::cout << "[RC] New connection, socket address " << NewSocket << std::endl;
-  		// a new connection is waiting
-    	CLuaRCHandler* hand = new CLuaRCHandler(NewSocket, m_GHost);
-    	std::cout << "[RC] Created handler, socket address " << hand->GetSocket() << std::endl;
-      m_Handlers.push_back(hand);
-      std::cout << "[RC] Registered new connection" << std::endl;
+  	if(NewSocket) {
+  	  std::cout << "[RC] New connection from " << NewSocket->GetIPString() << std::endl;
+      m_Handlers.push_back(new CLuaRCClientHandler(NewSocket, m_GHost));
   	}
-  	//
 	}
-	//std::cout << "[RC] Finished updating" << std::endl;
 }
 
 CLuaRC :: CLuaRC(CGHost* n_GHost) : m_GHost(n_GHost) {
