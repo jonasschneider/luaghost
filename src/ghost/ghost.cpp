@@ -41,6 +41,7 @@
 #include "game_admin.h"
 
 #include "lua/clua.h"
+#include "lua/rc.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -698,8 +699,10 @@ CGHost :: CGHost( CConfig *CFG )
   m_ScriptManager = new CLuaScriptManager(new CLuaContextGHost);
   m_ScriptManager->LoadScriptsFromDirectory("scripts");
 	CONSOLE_Print("[LUA] Ready!");
-	
   FireScriptEvent(new CLuaGHostInitalizedEvent(this));
+  
+  // Initialize RC
+  m_RC = new CLuaRC(this);
 }
 
 CGHost :: ~CGHost( )
@@ -853,6 +856,9 @@ bool CGHost :: Update( long usecBlock )
 		}
 	}
 	
+	if(!m_RC->GetSocket())
+	  std::cout << "[RC] WARNING: RC socket not up" << std::endl;
+	
 	FireScriptEvent(new CLuaGHostUpdateEvent(this), true);
 
 	unsigned int NumFDs = 0;
@@ -885,13 +891,17 @@ bool CGHost :: Update( long usecBlock )
 	for( vector<CBaseGame *> :: iterator i = m_Games.begin( ); i != m_Games.end( ); i++ )
 		NumFDs += (*i)->SetFD( &fd, &send_fd, &nfds );
 
-	// 5. the GProxy++ reconnect socket(s)
+  // 5. the RC Server socket and client sockets
+  NumFDs += m_RC->SetFD( &fd, &send_fd, &nfds );
+
+	// 6. the GProxy++ reconnect socket(s)
 
 	if( m_Reconnect && m_ReconnectSocket )
 	{
 		m_ReconnectSocket->SetFD( &fd, &send_fd, &nfds );
 		NumFDs++;
 	}
+	
 
 	for( vector<CTCPSocket *> :: iterator i = m_ReconnectSockets.begin( ); i != m_ReconnectSockets.end( ); i++ )
 	{
@@ -941,6 +951,11 @@ bool CGHost :: Update( long usecBlock )
 
 		MILLISLEEP( 50 );
 	}
+	
+	
+  
+	// RC
+  m_RC->Update(&fd, &send_fd);
 
 	bool AdminExit = false;
 	bool BNETExit = false;
@@ -1117,7 +1132,7 @@ bool CGHost :: Update( long usecBlock )
 		(*i)->DoSend( &send_fd );
 		i++;
 	}
-
+	
 	// autohost
 
 	if( !m_AutoHostGameName.empty( ) && m_AutoHostMaximumGames != 0 && m_AutoHostAutoStartPlayers != 0 && GetTime( ) - m_LastAutoHostTime >= 30 )
@@ -1189,6 +1204,11 @@ bool CGHost :: Update( long usecBlock )
 		m_LastAutoHostTime = GetTime( );
 	}
 
+
+	
+	/*CTCPClient* sock = new CTCPClient();
+	sock->Connect("titan", "localhost", 1337);*/
+	
 	return m_Exiting || AdminExit || BNETExit;
 }
 

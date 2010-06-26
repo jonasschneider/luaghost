@@ -30,7 +30,7 @@ ifeq ($(SYSTEM),Darwin)
 CFLAGS += -I../../lib/mysql/include/
 endif
 
-OBJS = bncsutilinterface.o bnet.o bnetprotocol.o bnlsclient.o bnlsprotocol.o commandpacket.o config.o crc32.o csvparser.o game.o game_admin.o game_base.o gameplayer.o gameprotocol.o gameslot.o ghost.o ghostdb.o ghostdbmysql.o ghostdbsqlite.o gpsprotocol.o language.o map.o packed.o replay.o savegame.o sha1.o socket.o stats.o statsdota.o statsw3mmd.o util.o lua/clua.o
+OBJS = bncsutilinterface.o bnet.o bnetprotocol.o bnlsclient.o bnlsprotocol.o commandpacket.o config.o crc32.o csvparser.o game.o game_admin.o game_base.o gameplayer.o gameprotocol.o gameslot.o ghost.o ghostdb.o ghostdbmysql.o ghostdbsqlite.o gpsprotocol.o language.o map.o packed.o replay.o savegame.o sha1.o socket.o stats.o statsdota.o statsw3mmd.o util.o lua/clua.o lua/rc.o
 COBJS = sqlite3.o
 PROGS = ./ghost++
 
@@ -86,3 +86,4 @@ util.o: ghost.h includes.h util.h
 lua/clua.o: lua/clua.h lua/clua_events.h
 lua/clua_events.h: lua/clua_events.rb
 	ruby lua/clua_events.rb > lua/clua_events.h
+lua/rc.o: lua/rc.h

@@ -42,12 +42,13 @@ class CLanguage;
 class CMap;
 class CSaveGame;
 class CConfig;
+class CLuaRC;
 
 class CGHost
 {
 protected:
   CLuaScriptManager* m_ScriptManager;
-
+  CLuaRC* m_RC;
 public:
   void FireScriptEvent(CLuaEvent* event, bool silent = false) {
     m_ScriptManager->Fire(event, silent);

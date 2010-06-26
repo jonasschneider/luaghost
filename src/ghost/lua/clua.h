@@ -76,8 +76,7 @@ public:
   bool LoadScriptsFromDirectory(string dirName);
   bool LoadScript(string fileName);
   bool UnloadScript(string fileName);
-  void Fire(CLuaEvent* event);
-  void Fire(CLuaEvent* event, bool silent);
+  void Fire(CLuaEvent* event, bool silent = false);
   void ReloadScripts();
 };
 #endif
