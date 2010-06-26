@@ -4,15 +4,16 @@
 
 #define RC_REQUEST_STATUS 210
 
-#define RC_RESPONSE_AVAILABLE 230
+#define RC_RESPONSE_STATUS_AVAILABLE 230
+#define RC_RESPONSE_STATUS_BUSY 231
 
 class CLuaRCRequest {
 protected:
-  int m_Command;
+  int m_CommandID;
   BYTEARRAY m_Packet;
 public:
-  CLuaRCRequest(int n_Command, BYTEARRAY n_Packet) : m_Command(n_Command), m_Packet(n_Packet) {}
-  int GetCommand() { return m_Command; }
+  CLuaRCRequest(int n_CommandID, BYTEARRAY n_Packet) : m_CommandID(n_CommandID), m_Packet(n_Packet) {}
+  int GetCommandID() { return m_CommandID; }
 };
 
 class CLuaRCClientHandler {
@@ -20,6 +21,8 @@ protected:
   CGHost* m_GHost;
   CTCPSocket* m_Socket;
   std::queue<CLuaRCRequest *> m_Requests;
+  void ExtractPackets();
+  void ProcessRequests();
 
 public:
   CLuaRCClientHandler(CTCPSocket* n_Socket, CGHost* n_GHost) : m_Socket(n_Socket), m_GHost(n_GHost) {}
