@@ -6,7 +6,7 @@ DFLAGS = -DGHOST_MYSQL
 OFLAGS = -O3
 LDIRS = -L. -L../../lib/bncsutil/src/bncsutil/ -L../../lib/StormLib/stormlib/
 LFLAGS = $(LDIRS) -llua5.1 -lbncsutil -lpthread -ldl -lz -lStorm -lmysqlclient_r -lboost_date_time-mt -lboost_thread-mt -lboost_system-mt -lboost_filesystem-mt -lluabindd
-CFLAGS = -I/usr/include/lua5.1
+CFLAGS = -I/usr/include/lua5.1 -ggdb
 
 ifeq ($(SYSTEM),Darwin)
 DFLAGS += -D__APPLE__
