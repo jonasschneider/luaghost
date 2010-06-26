@@ -3,14 +3,18 @@ require 'socket'      # Sockets are in standard library
 RC_HEADER_CONSTANT = 209
 
 RC_REQUEST_STATUS = 210
-RC_REQUEST_GAMENAME = 211
+RC_REQUEST_GAMEINFO = 211
 
-RC_RESPONSE_ERROR = 229
-RC_RESPONSE_STATUS_AVAILABLE = 230
-RC_RESPONSE_STATUS_BUSY = 231
+RC_RESPONSE_ERROR = 228
+RC_RESPONSE_OK = 229
 
-class RCReply < Struct.new(:command, :body)
-  
+RC_STATUS_AVAILABLE = 230
+RC_STATUS_BUSY = 231
+
+class RCReply < Struct.new(:ok, :body)
+  def ok?
+    ok == RC_RESPONSE_OK
+  end
 end
 
 class RCClient
@@ -43,12 +47,12 @@ class RCClient
 
   def read_reply(string_body = false)
     throw "Invalid header constant" unless read_one  == RC_HEADER_CONSTANT
-    command = read_one
+    ok = read_one
     length = read(2, true).unpack("S")[0]
     body_length = length - 4
     body = read(body_length, string_body)
     
-    reply = RCReply.new(command, body)
+    reply = RCReply.new(ok, body)
     puts "<< #{reply.inspect}" if @debug
     reply
   end
@@ -58,6 +62,7 @@ class RCClient
   end
   
   def read(length, as_string = false)
+    return if length == 0
     reply = @sock.read(length)
     puts "<< #{reply.unpack("C"*reply.length).map(&:to_i).join(" ")}" if @debug
     if as_string
@@ -74,27 +79,26 @@ class GHostRCClient < RCClient
   end
   
   def available?
-    status == RC_RESPONSE_STATUS_AVAILABLE
+    status == RC_STATUS_AVAILABLE
   end
   
   def in_lobby?
-    !gamename.nil?
+    !gameinfo.nil?
   end
   
-  def gamename
-    resp = send_command(RC_REQUEST_GAMENAME, "", true)
-    if resp.body.size == 1 && resp.body[0] == RC_RESPONSE_ERROR # most likely not ingame
-      return nil
-    else
-      return resp.body
+  def gameinfo
+    resp = send_command(RC_REQUEST_GAMEINFO, "", true)
+    if resp.ok?
+      arr = resp.body.unpack("Z*Z*LL")
+      { :description => arr[0], :name => arr[1], :players => arr[2], :numplayers => arr[3] }
     end
   end
 end
 
 c = GHostRCClient.new(true)
-
+puts "The bot is in the lobby of game '#{c.gameinfo.inspect}'"
 if c.in_lobby?
-  puts "The bot is in the lobby of game '#{c.gamename}'"
+  puts "The bot is in the lobby of game '#{c.gameinfo.inspect}'"
 else
   puts "The bot isn't in any lobby"
 end

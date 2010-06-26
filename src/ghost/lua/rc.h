@@ -4,23 +4,24 @@
 #define RC_HEADER_CONSTANT 209
 
 #define RC_REQUEST_STATUS 210
-#define RC_REQUEST_GAMENAME 211
+#define RC_REQUEST_GAMEINFO 211
 
-#define RC_RESPONSE_ERROR 229
-#define RC_RESPONSE_STATUS_AVAILABLE 230
-#define RC_RESPONSE_STATUS_BUSY 231
+#define RC_RESPONSE_ERROR 228
+#define RC_RESPONSE_OK 229
+
+#define RC_STATUS_AVAILABLE 230
+#define RC_STATUS_BUSY 231
 
 class CLuaRCReply {
 protected:
   int m_CommandID;
   BYTEARRAY m_Body;
+  bool m_Ok;
   
   bool AssignLength(BYTEARRAY* packet);
   
 public:
-  CLuaRCReply(int n_CommandID, BYTEARRAY n_Body) : m_CommandID(n_CommandID), m_Body(n_Body) {}
-  int GetCommandID() { return m_CommandID; }
-  BYTEARRAY GetBody() { return m_Body; }
+  CLuaRCReply(int n_CommandID, bool n_Ok, BYTEARRAY n_Body) : m_CommandID(n_CommandID), m_Ok(n_Ok), m_Body(n_Body) {}
   BYTEARRAY GetPacket();
 };
 

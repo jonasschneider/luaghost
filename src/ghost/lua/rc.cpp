@@ -10,10 +10,14 @@
 BYTEARRAY CLuaRCReply :: GetPacket() {
   BYTEARRAY packet;
   packet.push_back(RC_HEADER_CONSTANT);
-  packet.push_back(GetCommandID());
+  if(m_Ok)
+    packet.push_back(RC_RESPONSE_OK);
+  else
+    packet.push_back(RC_RESPONSE_ERROR);
   packet.push_back(0);
   packet.push_back(0);
-  UTIL_AppendByteArray(packet, GetBody());
+
+  UTIL_AppendByteArray(packet, m_Body);
 
 	BYTEARRAY LengthBytes;
 	if( packet.size( ) <= 65535 )
@@ -87,24 +91,29 @@ void CLuaRCClientHandler :: ProcessRequests() {
 		m_Requests.pop( );
 		
 		BYTEARRAY Body = BYTEARRAY();
+		bool Ok = true;
 		
 		switch( Request->GetCommandID() )
 		{
 		case RC_REQUEST_STATUS:
 		  int Status;
 		  if(!m_GHost->m_CurrentGame)
-		    Status = RC_RESPONSE_STATUS_AVAILABLE;
+		    Status = RC_STATUS_AVAILABLE;
 		  else
-		    Status = RC_RESPONSE_STATUS_BUSY;
+		    Status = RC_STATUS_BUSY;
 		  Body = UTIL_CreateByteArray(Status);
 		  break;
 		  
 		  
-    case RC_REQUEST_GAMENAME:
+    case RC_REQUEST_GAMEINFO:
       if(m_GHost->m_CurrentGame) {
-        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetGameName(), false);
+        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetDescription( ));
+        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetGameName());
+        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetNumHumanPlayers(), false);
+        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetNumHumanPlayers()+m_GHost->m_CurrentGame->GetSlotsOpen(), false);
+
       } else
-        Body = UTIL_CreateByteArray(RC_RESPONSE_ERROR);
+        Ok = false;
     	break;
     	
     	
@@ -112,10 +121,7 @@ void CLuaRCClientHandler :: ProcessRequests() {
 			std::cout << "[RC] Received invalid command ID=" << Request->GetCommandID() << std::endl;
 		}
 		
-		if(!Body.empty()) {
-		  SendReply(new CLuaRCReply(Request->GetCommandID(), Body));
-		  Body = BYTEARRAY();
-		}
+	  SendReply(new CLuaRCReply(Request->GetCommandID(), Ok, Body));
 	}
 }
 
