@@ -2,7 +2,10 @@
 #include "socket.h"
 #include "ghost.h"
 #include "game_base.h"
+#include "map.h"
+#include "config.h"
 #include "util.h"
+#include "gameprotocol.h"
 #include "lua/rc.h"
 
 
@@ -84,13 +87,41 @@ void CLuaRCClientHandler :: ExtractPackets() {
 	}
 }
 
+void CLuaRCClientHandler :: CreateGame(BYTEARRAY abody) {
+  int offset = 0;
+  BYTEARRAY body = BYTEARRAY(abody);
+  std::string gamename = UTIL_ByteArrayToString(UTIL_ExtractCString(body, 0));
+  offset += gamename.length() + 1;
+  std::string mapcfg = UTIL_ByteArrayToString(UTIL_ExtractCString(body, offset));
+  offset += mapcfg.length() + 1;
+  std::string owner = UTIL_ByteArrayToString(UTIL_ExtractCString(body, offset));
+  offset += owner.length() + 1;
+  unsigned char gameState = body[offset];
+  
+  std::cout << "Creating game [" << gamename << "]" << std::endl;
+  std::cout << "The config file is [" << mapcfg << "]" << std::endl;
+  std::cout << "The owner is [" << owner << "]" << std::endl;
+  
+  if(gameState == RC_GAME_PUBLIC)
+    gameState = GAME_PUBLIC;
+  else if(gameState == RC_GAME_PRIVATE)
+    gameState = GAME_PRIVATE;
+  
+  CConfig MapCFG;
+	MapCFG.Read( "mapcfgs/" + mapcfg );
+  CMap* map = new CMap( m_GHost, &MapCFG, "mapcfgs/" + mapcfg );
+  
+  m_GHost->CreateGame( map, gameState, false, gamename, owner, string(), string(), false );
+}
+
 void CLuaRCClientHandler :: ProcessRequests() {
 	while( !m_Requests.empty() )
 	{
 		CLuaRCRequest *Request = m_Requests.front( );
 		m_Requests.pop( );
 		
-		BYTEARRAY Body = BYTEARRAY();
+		BYTEARRAY ResponseBody = BYTEARRAY();
+		BYTEARRAY RequestBody = Request->GetBody();
 		int Error = NULL;
 		
 		switch( Request->GetCommandID() )
@@ -101,29 +132,39 @@ void CLuaRCClientHandler :: ProcessRequests() {
 		    Status = RC_STATUS_AVAILABLE;
 		  else
 		    Status = RC_STATUS_BUSY;
-		  Body = UTIL_CreateByteArray(Status);
+		  ResponseBody = UTIL_CreateByteArray(Status);
 		  break;
 		  
 		  
     case RC_REQUEST_GAMEINFO:
       if(m_GHost->m_CurrentGame) {
-        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetDescription( ));
-        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetGameName());
-        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetNumHumanPlayers(), false);
-        UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetNumHumanPlayers()+m_GHost->m_CurrentGame->GetSlotsOpen(), false);
+        UTIL_AppendByteArray(ResponseBody, m_GHost->m_CurrentGame->GetDescription( ));
+        UTIL_AppendByteArray(ResponseBody, m_GHost->m_CurrentGame->GetGameName());
+        UTIL_AppendByteArray(ResponseBody, m_GHost->m_CurrentGame->GetNumHumanPlayers(), false);
+        UTIL_AppendByteArray(ResponseBody, m_GHost->m_CurrentGame->GetNumHumanPlayers()+m_GHost->m_CurrentGame->GetSlotsOpen(), false);
 
       } else
         Error = RC_RESPONSE_NOTFOUND;
     	break;
     	
     	
+    case RC_REQUEST_CREATEGAME:
+      if(m_GHost->m_CurrentGame)
+        Error = RC_RESPONSE_IMPOSSIBLE;
+      else
+        CreateGame(RequestBody);
+      break;
+    
+    
 		default:
 			std::cout << "[RC] Received invalid command ID=" << Request->GetCommandID() << std::endl;
 		}
 		
-	  SendReply(new CLuaRCReply(Request->GetCommandID(), Error, Body));
+	  SendReply(new CLuaRCReply(Request->GetCommandID(), Error, ResponseBody));
 	}
 }
+
+
 
 void CLuaRCClientHandler :: SendReply(CLuaRCReply* Reply) {
   m_Socket->PutBytes(Reply->GetPacket());

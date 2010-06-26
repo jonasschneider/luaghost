@@ -43,6 +43,8 @@ unsigned char UTIL_ExtractHex( BYTEARRAY &b, unsigned int start, bool reverse );
 BYTEARRAY UTIL_ExtractNumbers( string s, unsigned int count );
 BYTEARRAY UTIL_ExtractHexNumbers( string s );
 
+string UTIL_ByteArrayToString( BYTEARRAY b );
+
 // conversions
 
 string UTIL_ToString( unsigned long i );

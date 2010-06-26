@@ -4,12 +4,18 @@ RC_HEADER_CONSTANT = 209
 
 RC_REQUEST_STATUS = 210
 RC_REQUEST_GAMEINFO = 211
+RC_REQUEST_CREATEGAME = 212
 
+
+RC_RESPONSE_IMPOSSIBLE = 227
 RC_RESPONSE_NOTFOUND = 228
 RC_RESPONSE_OK = 229
 
 RC_STATUS_AVAILABLE = 230
 RC_STATUS_BUSY = 231
+
+RC_GAME_PUBLIC = 250
+RC_GAME_PRIVATE = 251
 
 class RCReply < Struct.new(:ok, :body)
   def ok?
@@ -88,6 +94,11 @@ class GHostRCClient < RCClient
       arr = resp.body.unpack("Z*Z*LL")
       { :description => arr[0], :name => arr[1], :players => arr[2], :numplayers => arr[3] }
     end
+  end
+  
+  def create_game(gamename, gametype, mapcfg, owner)
+    body = [gamename, mapcfg, owner, gametype].pack("Z*Z*Z*C")
+    resp = run_command(RC_REQUEST_CREATEGAME, body)
   end
 end
 

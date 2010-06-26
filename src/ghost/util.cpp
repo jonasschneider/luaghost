@@ -662,3 +662,11 @@ uint32_t UTIL_Factorial( uint32_t x )
 
 	return Factorial;
 }
+
+std::string UTIL_ByteArrayToString( BYTEARRAY b ) {
+  string s;
+  for( BYTEARRAY :: iterator i = b.begin( ); i != b.end( ); i++ ) {
+    s.append(1, *i);
+  }
+  return s;
+}

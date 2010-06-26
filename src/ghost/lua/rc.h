@@ -5,9 +5,14 @@
 
 #define RC_REQUEST_STATUS 210
 #define RC_REQUEST_GAMEINFO 211
+#define RC_REQUEST_CREATEGAME 212
 
+#define RC_RESPONSE_IMPOSSIBLE 227
 #define RC_RESPONSE_NOTFOUND 228
 #define RC_RESPONSE_OK 229
+
+#define RC_GAME_PUBLIC 250
+#define RC_GAME_PRIVATE 251
 
 #define RC_STATUS_AVAILABLE 230
 #define RC_STATUS_BUSY 231
@@ -32,6 +37,9 @@ protected:
 public:
   CLuaRCRequest(int n_CommandID, BYTEARRAY n_Packet) : m_CommandID(n_CommandID), m_Packet(n_Packet) {}
   int GetCommandID() { return m_CommandID; }
+  BYTEARRAY GetBody() {
+    return BYTEARRAY(m_Packet.begin() + 4, m_Packet.end());
+  }
 };
 
 class CLuaRCClientHandler {
@@ -42,6 +50,7 @@ protected:
   void ExtractPackets();
   void ProcessRequests();
   void SendReply(CLuaRCReply* Reply);
+  void CreateGame(BYTEARRAY body);
 
 public:
   CLuaRCClientHandler(CTCPSocket* n_Socket, CGHost* n_GHost) : m_Socket(n_Socket), m_GHost(n_GHost) {}
