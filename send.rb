@@ -5,7 +5,7 @@ RC_HEADER_CONSTANT = 209
 RC_REQUEST_STATUS = 210
 RC_REQUEST_GAMENAME = 211
 
-RC_RESPONSE_ERROR = 29
+RC_RESPONSE_ERROR = 229
 RC_RESPONSE_STATUS_AVAILABLE = 230
 RC_RESPONSE_STATUS_BUSY = 231
 
@@ -14,8 +14,9 @@ class RCReply < Struct.new(:command, :body)
 end
 
 class RCClient
-  def initialize
+  def initialize(debug = false)
     @sock = TCPSocket.open("localhost", 1337)
+    @debug = debug
   end
   
   def close
@@ -36,19 +37,19 @@ class RCClient
     packet[2] = length[0]
     packet[3] = length[1]
     
-    puts ">> #{packet.map{|b|b.to_s}.join(" ")}"
+    puts ">> #{packet.map{|b|b.to_s}.join(" ")}" if @debug
     @sock.write(packet.pack("C"*packet.size))
   end
 
   def read_reply(string_body = false)
     throw "Invalid header constant" unless read_one  == RC_HEADER_CONSTANT
     command = read_one
-    length = @sock.read(2).unpack("S")[0]
+    length = read(2, true).unpack("S")[0]
     body_length = length - 4
     body = read(body_length, string_body)
     
     reply = RCReply.new(command, body)
-    puts "<< #{reply.inspect}"
+    puts "<< #{reply.inspect}" if @debug
     reply
   end
   
@@ -58,6 +59,7 @@ class RCClient
   
   def read(length, as_string = false)
     reply = @sock.read(length)
+    puts "<< #{reply.unpack("C"*reply.length).map(&:to_i).join(" ")}" if @debug
     if as_string
       reply
     else
@@ -89,7 +91,7 @@ class GHostRCClient < RCClient
   end
 end
 
-c = GHostRCClient.new()
+c = GHostRCClient.new(true)
 
 if c.in_lobby?
   puts "The bot is in the lobby of game '#{c.gamename}'"
