@@ -1,4 +1,5 @@
 #include "lua/clua.h"
+#include <sstream>
 
 #define RC_HEADER_CONSTANT 209
 
@@ -6,6 +7,20 @@
 
 #define RC_RESPONSE_STATUS_AVAILABLE 230
 #define RC_RESPONSE_STATUS_BUSY 231
+
+class CLuaRCReply {
+protected:
+  int m_CommandID;
+  BYTEARRAY m_Body;
+  
+  bool AssignLength(BYTEARRAY* packet);
+  
+public:
+  CLuaRCReply(int n_CommandID, BYTEARRAY n_Body) : m_CommandID(n_CommandID), m_Body(n_Body) {}
+  int GetCommandID() { return m_CommandID; }
+  BYTEARRAY GetBody() { return m_Body; }
+  BYTEARRAY GetPacket();
+};
 
 class CLuaRCRequest {
 protected:
@@ -23,6 +38,7 @@ protected:
   std::queue<CLuaRCRequest *> m_Requests;
   void ExtractPackets();
   void ProcessRequests();
+  void SendReply(CLuaRCReply* Reply);
 
 public:
   CLuaRCClientHandler(CTCPSocket* n_Socket, CGHost* n_GHost) : m_Socket(n_Socket), m_GHost(n_GHost) {}

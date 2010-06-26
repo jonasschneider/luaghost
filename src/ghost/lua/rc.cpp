@@ -3,6 +3,27 @@
 #include "ghost.h"
 #include "util.h"
 #include "lua/rc.h"
+#include "boost/lexical_cast.hpp"
+
+
+
+BYTEARRAY CLuaRCReply :: GetPacket() {
+  BYTEARRAY packet;
+  packet.push_back(RC_HEADER_CONSTANT);
+  packet.push_back(GetCommandID());
+  packet.push_back(0);
+  packet.push_back(0);
+  UTIL_AppendByteArray(packet, GetBody());
+
+	BYTEARRAY LengthBytes;
+	if( packet.size( ) <= 65535 )
+	{
+		LengthBytes = UTIL_CreateByteArray( (uint16_t)packet.size( ), false );
+		packet[2] = LengthBytes[0];
+		packet[3] = LengthBytes[1];
+		return packet;
+	}
+}
 
 // CLuaRCClientHandler
 
@@ -22,7 +43,6 @@ void CLuaRCClientHandler :: ExtractPackets() {
 	BYTEARRAY Bytes = UTIL_CreateByteArray( (unsigned char *)RecvBuffer->c_str( ), RecvBuffer->size( ) );
 
 	// a packet is at least 4 bytes so loop as long as the buffer contains 4 bytes
-
 	while( Bytes.size( ) >= 4 )
 	{
 		if( Bytes[0] == RC_HEADER_CONSTANT )
@@ -65,52 +85,33 @@ void CLuaRCClientHandler :: ProcessRequests() {
 	{
 		CLuaRCRequest *Request = m_Requests.front( );
 		m_Requests.pop( );
-				  uint16_t Length = 5;
-  		BYTEARRAY packet;
+		
+		BYTEARRAY Body = BYTEARRAY();;
+		
 		switch( Request->GetCommandID() )
 		{
 		case RC_REQUEST_STATUS:
-		  int Reply;
+		  int Status;
 		  if(!m_GHost->m_CurrentGame)
-		    Reply = RC_RESPONSE_STATUS_AVAILABLE;
+		    Status = RC_RESPONSE_STATUS_AVAILABLE;
 		  else
-		    Reply = RC_RESPONSE_STATUS_BUSY;
-		  
-
-  		
-  		packet.push_back( RC_HEADER_CONSTANT );		
-    	packet.push_back( Request->GetCommandID() );
-    	packet.push_back( 5 );									// packet length will be assigned later
-    	packet.push_back( 0 );									// packet length will be assigned later
-    	packet.push_back( Reply );
-    	
-    	m_Socket->PutBytes(packet);
-    	
+		    Status = RC_RESPONSE_STATUS_BUSY;
+		  Body = UTIL_CreateByteArray(Status);
     	break;
 		default:
 			std::cout << "[RC] Received invalid command ID=" << Request->GetCommandID() << std::endl;
 		}
+		
+		if(!Body.empty()) {
+		  SendReply(new CLuaRCReply(Request->GetCommandID(), Body));
+		  Body = BYTEARRAY();
+		}
 	}
 }
 
-/*
-bool CGameProtocol :: AssignLength( BYTEARRAY &content )
-{
-	// insert the actual length of the content array into bytes 3 and 4 (indices 2 and 3)
-
-	BYTEARRAY LengthBytes;
-
-	if( content.size( ) >= 4 && content.size( ) <= 65535 )
-	{
-		LengthBytes = UTIL_CreateByteArray( (uint16_t)content.size( ), false );
-		content[2] = LengthBytes[0];
-		content[3] = LengthBytes[1];
-		return true;
-	}
-
-	return false;
+void CLuaRCClientHandler :: SendReply(CLuaRCReply* Reply) {
+  m_Socket->PutBytes(Reply->GetPacket());
 }
-*/
 
 bool CLuaRCClientHandler :: SetFD( void *fd, void *send_fd, int *nfds ) {
   if(!m_Socket) {
