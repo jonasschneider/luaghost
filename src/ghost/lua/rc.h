@@ -6,7 +6,7 @@
 #define RC_REQUEST_STATUS 210
 #define RC_REQUEST_GAMEINFO 211
 
-#define RC_RESPONSE_ERROR 228
+#define RC_RESPONSE_NOTFOUND 228
 #define RC_RESPONSE_OK 229
 
 #define RC_STATUS_AVAILABLE 230
@@ -16,12 +16,12 @@ class CLuaRCReply {
 protected:
   int m_CommandID;
   BYTEARRAY m_Body;
-  bool m_Ok;
+  int m_Error;
   
   bool AssignLength(BYTEARRAY* packet);
   
 public:
-  CLuaRCReply(int n_CommandID, bool n_Ok, BYTEARRAY n_Body) : m_CommandID(n_CommandID), m_Ok(n_Ok), m_Body(n_Body) {}
+  CLuaRCReply(int n_CommandID, int n_Error, BYTEARRAY n_Body) : m_CommandID(n_CommandID), m_Error(n_Error), m_Body(n_Body) {}
   BYTEARRAY GetPacket();
 };
 

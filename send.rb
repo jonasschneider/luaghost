@@ -5,7 +5,7 @@ RC_HEADER_CONSTANT = 209
 RC_REQUEST_STATUS = 210
 RC_REQUEST_GAMEINFO = 211
 
-RC_RESPONSE_ERROR = 228
+RC_RESPONSE_NOTFOUND = 228
 RC_RESPONSE_OK = 229
 
 RC_STATUS_AVAILABLE = 230
@@ -28,12 +28,12 @@ class RCClient
   end
   
   protected
-    def send_command(command, body = "", string_reply_body = false)
-    write_command(command, body)
-    read_reply(string_reply_body)
+    def run_command(command, body = "")
+    send_command(command, body)
+    read_reply
   end
   
-  def write_command(command, body = "")
+  def send_command(command, body = "")
     packet = [RC_HEADER_CONSTANT, command, 0, 0]
     body.each_byte {|c| packet << c }
     
@@ -45,12 +45,12 @@ class RCClient
     @sock.write(packet.pack("C"*packet.size))
   end
 
-  def read_reply(string_body = false)
+  def read_reply
     throw "Invalid header constant" unless read_one  == RC_HEADER_CONSTANT
     ok = read_one
-    length = read(2, true).unpack("S")[0]
+    length = read(2).unpack("S")[0]
     body_length = length - 4
-    body = read(body_length, string_body)
+    body = read(body_length)
     
     reply = RCReply.new(ok, body)
     puts "<< #{reply.inspect}" if @debug
@@ -61,21 +61,17 @@ class RCClient
     read(1)[0]
   end
   
-  def read(length, as_string = false)
+  def read(length)
     return if length == 0
     reply = @sock.read(length)
     puts "<< #{reply.unpack("C"*reply.length).map(&:to_i).join(" ")}" if @debug
-    if as_string
-      reply
-    else
-      reply.unpack("C"*reply.length).map(&:to_i)
-    end
+    reply
   end
 end
 
 class GHostRCClient < RCClient
   def status
-    send_command(RC_REQUEST_STATUS).body[0]
+    run_command(RC_REQUEST_STATUS).body
   end
   
   def available?
@@ -87,7 +83,7 @@ class GHostRCClient < RCClient
   end
   
   def gameinfo
-    resp = send_command(RC_REQUEST_GAMEINFO, "", true)
+    resp = run_command(RC_REQUEST_GAMEINFO)
     if resp.ok?
       arr = resp.body.unpack("Z*Z*LL")
       { :description => arr[0], :name => arr[1], :players => arr[2], :numplayers => arr[3] }
@@ -96,7 +92,6 @@ class GHostRCClient < RCClient
 end
 
 c = GHostRCClient.new(true)
-puts "The bot is in the lobby of game '#{c.gameinfo.inspect}'"
 if c.in_lobby?
   puts "The bot is in the lobby of game '#{c.gameinfo.inspect}'"
 else

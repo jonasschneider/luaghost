@@ -10,10 +10,10 @@
 BYTEARRAY CLuaRCReply :: GetPacket() {
   BYTEARRAY packet;
   packet.push_back(RC_HEADER_CONSTANT);
-  if(m_Ok)
-    packet.push_back(RC_RESPONSE_OK);
+  if(m_Error)
+    packet.push_back(m_Error);
   else
-    packet.push_back(RC_RESPONSE_ERROR);
+    packet.push_back(RC_RESPONSE_OK);
   packet.push_back(0);
   packet.push_back(0);
 
@@ -91,7 +91,7 @@ void CLuaRCClientHandler :: ProcessRequests() {
 		m_Requests.pop( );
 		
 		BYTEARRAY Body = BYTEARRAY();
-		bool Ok = true;
+		int Error = NULL;
 		
 		switch( Request->GetCommandID() )
 		{
@@ -113,7 +113,7 @@ void CLuaRCClientHandler :: ProcessRequests() {
         UTIL_AppendByteArray(Body, m_GHost->m_CurrentGame->GetNumHumanPlayers()+m_GHost->m_CurrentGame->GetSlotsOpen(), false);
 
       } else
-        Ok = false;
+        Error = RC_RESPONSE_NOTFOUND;
     	break;
     	
     	
@@ -121,7 +121,7 @@ void CLuaRCClientHandler :: ProcessRequests() {
 			std::cout << "[RC] Received invalid command ID=" << Request->GetCommandID() << std::endl;
 		}
 		
-	  SendReply(new CLuaRCReply(Request->GetCommandID(), Ok, Body));
+	  SendReply(new CLuaRCReply(Request->GetCommandID(), Error, Body));
 	}
 }
 
