@@ -114,12 +114,6 @@ class GHostRCClient < RCClient
     end
   end
   
-  def create_game(gamename, gametype, mapcfg, owner)
-    body = [gamename, mapcfg, owner, gametype].pack("Z*Z*Z*C")
-    resp = run_command(RC_REQUEST_CREATEGAME, body, false)
-    resp.ok?
-  end
-  
   def luacmd(cmd, *args)
     body_parts = [cmd.to_s] + args.map(&:to_s)
     puts body_parts.inspect
@@ -134,4 +128,3 @@ if c.in_lobby?
 else
   puts "The bot isn't in any lobby"
 end
-puts c.luacmd("testcmd", "DOTA APEM IMBA", "wormwar.cfg", "sokrates-", true).inspect

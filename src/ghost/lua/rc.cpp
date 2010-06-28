@@ -8,7 +8,7 @@
 #include "gameprotocol.h"
 #include "lua/rc.h"
 
-
+// CLuaRCReply
 
 BYTEARRAY CLuaRCReply :: GetPacket() {
   BYTEARRAY packet;
@@ -32,6 +32,8 @@ BYTEARRAY CLuaRCReply :: GetPacket() {
 	}
 }
 
+
+
 // CLuaRCClientHandler
 
 bool CLuaRCClientHandler :: Update( void *fd, void *send_fd ) {
@@ -40,6 +42,7 @@ bool CLuaRCClientHandler :: Update( void *fd, void *send_fd ) {
   ProcessRequests();
   m_Socket->DoSend( (fd_set *)send_fd );
 }
+
 
 void CLuaRCClientHandler :: ExtractPackets() {
 	if( !m_Socket )
@@ -87,32 +90,6 @@ void CLuaRCClientHandler :: ExtractPackets() {
 	}
 }
 
-void CLuaRCClientHandler :: CreateGame(BYTEARRAY abody) {
-  int offset = 0;
-  BYTEARRAY body = BYTEARRAY(abody);
-  std::string gamename = UTIL_ByteArrayToString(UTIL_ExtractCString(body, 0));
-  offset += gamename.length() + 1;
-  std::string mapcfg = UTIL_ByteArrayToString(UTIL_ExtractCString(body, offset));
-  offset += mapcfg.length() + 1;
-  std::string owner = UTIL_ByteArrayToString(UTIL_ExtractCString(body, offset));
-  offset += owner.length() + 1;
-  unsigned char gameState = body[offset];
-  
-  std::cout << "Creating game [" << gamename << "]" << std::endl;
-  std::cout << "The config file is [" << mapcfg << "]" << std::endl;
-  std::cout << "The owner is [" << owner << "]" << std::endl;
-  
-  if(gameState == RC_GAME_PUBLIC)
-    gameState = GAME_PUBLIC;
-  else if(gameState == RC_GAME_PRIVATE)
-    gameState = GAME_PRIVATE;
-  
-  CConfig MapCFG;
-	MapCFG.Read( "mapcfgs/" + mapcfg );
-  CMap* map = new CMap( m_GHost, &MapCFG, "mapcfgs/" + mapcfg );
-  
-  m_GHost->CreateGame( map, gameState, false, gamename, owner, string(), string(), false );
-}
 
 void CLuaRCClientHandler :: HandleLuaCmd(BYTEARRAY Body) {
 	string Command = UTIL_ByteArrayToString(UTIL_ExtractCString(Body, 0));
@@ -132,6 +109,7 @@ void CLuaRCClientHandler :: HandleLuaCmd(BYTEARRAY Body) {
   
   m_GHost->FireScriptEvent( new CLuaRCCommandReceivedEvent(m_GHost, this, Command, Args) );
 }
+
 
 void CLuaRCClientHandler :: ProcessRequests() {
 	while( !m_Requests.empty() )
@@ -166,14 +144,6 @@ void CLuaRCClientHandler :: ProcessRequests() {
         Error = RC_RESPONSE_NOTFOUND;
     	break;
     	
-    	
-    case RC_REQUEST_CREATEGAME:
-      if(m_GHost->m_CurrentGame)
-        Error = RC_RESPONSE_IMPOSSIBLE;
-      else
-        CreateGame(RequestBody);
-      break;
-    
     case RC_REQUEST_LUACMD:
       HandleLuaCmd(RequestBody);
       break;
@@ -187,10 +157,10 @@ void CLuaRCClientHandler :: ProcessRequests() {
 }
 
 
-
 void CLuaRCClientHandler :: SendReply(CLuaRCReply* Reply) {
   m_Socket->PutBytes(Reply->GetPacket());
 }
+
 
 bool CLuaRCClientHandler :: SetFD( void *fd, void *send_fd, int *nfds ) {
   if(!m_Socket) {
@@ -211,6 +181,7 @@ bool CLuaRCClientHandler :: SetFD( void *fd, void *send_fd, int *nfds ) {
     }
   }
 }
+
 
 
 // CLuaRC
@@ -234,6 +205,7 @@ unsigned int CLuaRC :: SetFD( void *fd, void *send_fd, int *nfds ) {
 	return NumFDs;
 }
 
+
 void CLuaRC :: Update( void *fd, void *send_fd ) {
   // Update client connections
 	for( vector<CLuaRCClientHandler *> :: iterator i = m_Handlers.begin( ); i != m_Handlers.end( ); i++ )
@@ -249,6 +221,7 @@ void CLuaRC :: Update( void *fd, void *send_fd ) {
   	}
 	}
 }
+
 
 CLuaRC :: CLuaRC(CGHost* n_GHost) : m_GHost(n_GHost) {
   m_Socket = new CTCPServer();
