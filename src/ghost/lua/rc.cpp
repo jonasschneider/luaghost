@@ -114,6 +114,25 @@ void CLuaRCClientHandler :: CreateGame(BYTEARRAY abody) {
   m_GHost->CreateGame( map, gameState, false, gamename, owner, string(), string(), false );
 }
 
+void CLuaRCClientHandler :: HandleLuaCmd(BYTEARRAY Body) {
+	string Command = UTIL_ByteArrayToString(UTIL_ExtractCString(Body, 0));
+  vector<string> Args;
+  string NewArg;
+  int offset = Command.length() + 1;
+  
+  while(Body.size() > offset) {
+    NewArg = UTIL_ByteArrayToString(UTIL_ExtractCString(Body, offset));
+    if(NewArg.length() > 0) {
+      Args.push_back(NewArg);
+      offset += NewArg.length() + 1;
+    } else {
+      break;
+    }
+  }
+  
+  m_GHost->FireScriptEvent( new CLuaRCCommandReceivedEvent(m_GHost, this, Command, Args) );
+}
+
 void CLuaRCClientHandler :: ProcessRequests() {
 	while( !m_Requests.empty() )
 	{
@@ -155,7 +174,10 @@ void CLuaRCClientHandler :: ProcessRequests() {
         CreateGame(RequestBody);
       break;
     
-    
+    case RC_REQUEST_LUACMD:
+      HandleLuaCmd(RequestBody);
+      break;
+      
 		default:
 			std::cout << "[RC] Received invalid command ID=" << Request->GetCommandID() << std::endl;
 		}

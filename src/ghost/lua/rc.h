@@ -1,4 +1,3 @@
-#include "lua/clua.h"
 #include <sstream>
 
 #define RC_HEADER_CONSTANT 209
@@ -6,6 +5,8 @@
 #define RC_REQUEST_STATUS 210
 #define RC_REQUEST_GAMEINFO 211
 #define RC_REQUEST_CREATEGAME 212
+#define RC_REQUEST_LUACMD 213
+
 
 #define RC_RESPONSE_IMPOSSIBLE 227
 #define RC_RESPONSE_NOTFOUND 228
@@ -50,6 +51,7 @@ protected:
   void ExtractPackets();
   void ProcessRequests();
   void SendReply(CLuaRCReply* Reply);
+  void HandleLuaCmd(BYTEARRAY Body);
   void CreateGame(BYTEARRAY body);
 
 public:

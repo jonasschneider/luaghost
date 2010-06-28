@@ -6,6 +6,7 @@ HEADER = <<-END
 class CGHost;
 class CBaseGame;
 class CGamePlayer;
+class CLuaRCClientHandler;
 
 class CLuaEvent {
 public:
@@ -15,11 +16,12 @@ public:
 
 END
 
-class Event < Struct.new(:name, :comment, :attributes)
-  def initialize(name, comment, attributes)
+class Event < Struct.new(:name, :comment, :attributes, :methods)
+  def initialize(name, comment, attributes, methods = [])
     @name = name
     @comment = comment
     @attributes = attributes.to_a
+    @methods = methods
   end
   
   def collect separator, &block
@@ -45,6 +47,12 @@ class Event < Struct.new(:name, :comment, :attributes)
     collect(", ") { |att| "m_#{att[0]}(n_#{att[0]})" }
   end
   
+  def methods
+    lines = []
+    @methods.each{ |m| lines << "  #{m.code}" }
+    lines.join("\n")
+  end
+  
   def to_s
     return <<-END
 /* #{@comment} */
@@ -53,6 +61,7 @@ protected:
 #{attribute_defs}
 public:
   CLua#{@name}Event(#{constructor_args}) : #{constructor_assigns} {}
+#{methods.empty? ? "" : methods + "  \n" }
   std::string GetLuaName() { return "#{@name}"; }
 #{getter_defs}
 };
@@ -61,8 +70,13 @@ END
 end
 
 class Attribute < Struct.new(:name, :type); end
+class CMethod < Struct.new(:code); end
 def a(name, type)
   Attribute.new(name, type)
+end
+
+def m(code)
+  CMethod.new(code)
 end
 
 events = [
@@ -89,6 +103,16 @@ events = [
   
   Event.new("GHostUpdate", "Called on every update cycle", [
     a("GHost", "CGHost*")
+  ]),
+  
+  Event.new("RCCommandReceived", "Called when an RC command is received", [
+    a("GHost", "CGHost*"),
+    a("Client", "CLuaRCClientHandler*"),
+    a("Command", "std::string"),
+    a("Args", "vector<std::string>")
+  ], [
+    m("std::string GetArg(int pos) { return m_Args[pos]; }"),
+    m("int GetArgCount() { return m_Args.size(); }")
   ])
 ]
 puts HEADER

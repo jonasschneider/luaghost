@@ -1757,3 +1757,9 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 			(*i)->HoldClan( m_CurrentGame );
 	}
 }
+
+CMap* CGHost :: LoadMap(string nCFGFile) {
+  CConfig MapCFG;
+	MapCFG.Read( m_MapCFGPath + nCFGFile );
+  return new CMap( this, &MapCFG, m_MapCFGPath + nCFGFile );
+}

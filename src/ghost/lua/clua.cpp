@@ -19,6 +19,7 @@
 #include "boost/filesystem/operations.hpp"
 
 #include "lua/clua.h"
+#include "lua/rc.h"
 
 using namespace std;
 
@@ -45,10 +46,19 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
       .def("GetGame", &CLuaGamePlayerChatEvent::GetGame)
       .def("GetPlayer", &CLuaGamePlayerChatEvent::GetPlayer)
       .def("GetMessage", &CLuaGamePlayerChatEvent::GetMessage),
-
+   
+    class_<CLuaRCCommandReceivedEvent, CLuaEvent>("RCCommandReceivedEvent")
+      .def("GetGHost", &CLuaRCCommandReceivedEvent::GetGHost)
+      .def("GetCommand", &CLuaRCCommandReceivedEvent::GetCommand)
+      .def("GetArg", &CLuaRCCommandReceivedEvent::GetArg)
+      .def("GetArgCount", &CLuaRCCommandReceivedEvent::GetArgCount),
+      /*.def("GetClient", &CLuaRCCommandReceivedEvent::GetClient),*/
+    
     // Domain classes
     class_<CGHost>("GHost")
-      .def_readonly("version", &CGHost::m_Version),
+      .def_readonly("version", &CGHost::m_Version)
+      .def("LoadMap", &CGHost::LoadMap)
+      .def("CreateGame", &CGHost::CreateGame),
     
     class_<CGamePlayer>("GamePlayer")
       .def("GetName", &CGamePlayer::GetName),
@@ -57,7 +67,9 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
       .def("SendAllChat", (void(CBaseGame::*)(string))&CBaseGame::SendAllChat)
       .def("GetTeamOfPlayer", &CBaseGame::GetTeamOfPlayer)
       .def("GetHostCounter", &CBaseGame::GetHostCounter)
-      .def("GetNumPlayersInTeam", &CBaseGame::GetNumPlayersInTeam)
+      .def("GetNumPlayersInTeam", &CBaseGame::GetNumPlayersInTeam),
+    
+    class_<CMap>("Map")
   ];
 }
 

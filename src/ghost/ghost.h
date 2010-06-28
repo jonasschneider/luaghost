@@ -202,6 +202,7 @@ public:
 	void SetConfigs( CConfig *CFG );
 	void ExtractScripts( );
 	void LoadIPToCountryData( );
+	CMap* LoadMap(string nCFGFile);
 	void CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper );
 };
 

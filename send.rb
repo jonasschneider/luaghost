@@ -5,7 +5,7 @@ RC_HEADER_CONSTANT = 209
 RC_REQUEST_STATUS = 210
 RC_REQUEST_GAMEINFO = 211
 RC_REQUEST_CREATEGAME = 212
-
+RC_REQUEST_LUACMD = 213
 
 RC_RESPONSE_IMPOSSIBLE = 227
 RC_RESPONSE_NOTFOUND = 228
@@ -24,19 +24,33 @@ class RCReply < Struct.new(:ok, :body)
 end
 
 class RCClient
-  def initialize(debug = false)
+  def initialize(args = {})
     @sock = TCPSocket.open("localhost", 1337)
-    @debug = debug
+    @debug = !args[:debug].nil?
+    @caching = !args[:caching].nil?
+    @cache = {}
   end
   
   def close
     @sock.close
   end
   
+  def tick!
+    @cache = {}
+  end
+  
   protected
-    def run_command(command, body = "")
+  
+  def run_command(command, body = "", cacheable = true)
+    if cacheable && @caching && @cache[command.to_s+body]
+      return @cache[command.to_s+body]
+    end
     send_command(command, body)
-    read_reply
+    reply = read_reply
+    if cacheable && @caching
+      @cache[command.to_s+body] = reply
+    end
+    reply
   end
   
   def send_command(command, body = "")
@@ -48,7 +62,11 @@ class RCClient
     packet[3] = length[1]
     
     puts ">> #{packet.map{|b|b.to_s}.join(" ")}" if @debug
-    @sock.write(packet.pack("C"*packet.size))
+    begin
+      @sock.write(packet.pack("C"*packet.size))
+    rescue Exception => e
+      puts e.inspect
+    end
   end
 
   def read_reply
@@ -98,13 +116,22 @@ class GHostRCClient < RCClient
   
   def create_game(gamename, gametype, mapcfg, owner)
     body = [gamename, mapcfg, owner, gametype].pack("Z*Z*Z*C")
-    resp = run_command(RC_REQUEST_CREATEGAME, body)
+    resp = run_command(RC_REQUEST_CREATEGAME, body, false)
+    resp.ok?
+  end
+  
+  def luacmd(cmd, *args)
+    body_parts = [cmd.to_s] + args.map(&:to_s)
+    puts body_parts.inspect
+    body = body_parts.pack("Z*"*body_parts.length)
+    run_command(RC_REQUEST_LUACMD, body, false)
   end
 end
 
-c = GHostRCClient.new(true)
+c = GHostRCClient.new(:debug => true, :caching => true)
 if c.in_lobby?
   puts "The bot is in the lobby of game '#{c.gameinfo.inspect}'"
 else
   puts "The bot isn't in any lobby"
 end
+puts c.luacmd("testcmd", "DOTA APEM IMBA", "wormwar.cfg", "sokrates-", true).inspect
