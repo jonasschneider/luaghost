@@ -1758,8 +1758,19 @@ void CGHost :: CreateGame( CMap *map, unsigned char gameState, bool saveGame, st
 	}
 }
 
+void CGHost :: CreateGame( CMap *map, bool isPublic, string gameName, string ownerName )
+{
+  int gameState;
+  if(isPublic)
+    gameState = GAME_PUBLIC;
+  else
+    gameState = GAME_PRIVATE;
+  CreateGame(map, gameState, false, gameName, ownerName, "", "", false);
+}
+
 CMap* CGHost :: LoadMap(string nCFGFile) {
   CConfig MapCFG;
 	MapCFG.Read( m_MapCFGPath + nCFGFile );
   return new CMap( this, &MapCFG, m_MapCFGPath + nCFGFile );
 }
+

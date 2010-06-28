@@ -204,6 +204,7 @@ public:
 	void LoadIPToCountryData( );
 	CMap* LoadMap(string nCFGFile);
 	void CreateGame( CMap *map, unsigned char gameState, bool saveGame, string gameName, string ownerName, string creatorName, string creatorServer, bool whisper );
+	void CreateGame( CMap *map, bool isPublic, string gameName, string ownerName );
 };
 
 #endif

@@ -58,7 +58,7 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
     class_<CGHost>("GHost")
       .def_readonly("version", &CGHost::m_Version)
       .def("LoadMap", &CGHost::LoadMap)
-      .def("CreateGame", &CGHost::CreateGame),
+      .def("CreateGame", (void(CGHost::*)(CMap*, bool, string, string))&CGHost::CreateGame),
     
     class_<CGamePlayer>("GamePlayer")
       .def("GetName", &CGamePlayer::GetName),

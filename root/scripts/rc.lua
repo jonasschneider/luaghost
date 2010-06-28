@@ -9,24 +9,22 @@ function save_ghost(event)
 end
 
 function process_command(event)
-  Controller:Log("Lua received " .. event:GetCommand() .. " with " .. event:GetArgCount() .. " args, the first one being " .. event:GetArg(0))
+  if event:GetCommand() ~= "CreateGame" then return end
+  
   local gamename = event:GetArg(0)
   local mapcfg = event:GetArg(1)
   local owner = event:GetArg(2)
   local public = event:GetArg(3) == "true"
   
-  Controller:Log("Creating game [" .. gamename .. "]");
-  Controller:Log("The config file is [" .. mapcfg .. "]");
-  Controller:Log("The owner is [" .. owner .. "]");
-  Controller:Log("The game is public? " .. tostring(public));
-  
-  if public then
-    local gamestate = 16
+  if string.len(gamename) > 0 and string.len(mapcfg) > 0 and string.len(mapcfg) > 0 then
+    Controller:Log("Creating game [" .. gamename .. "] with map " .. mapcfg .. ", owned by " .. owner .. " (public: " .. tostring(public) .. ")");
+    map = ghost:LoadMap(mapcfg)
+    if map then
+      ghost:CreateGame(map, public, gamename, owner)
+    else
+      Controller:Log("Could not load map")
+    end
   else
-    local gamestate = 17
+    Controller:Log("Invalid arguments passed")
   end
-  
-  map = ghost:LoadMap(mapcfg)
-  
-  ghost:CreateGame(map, gamestate, false, gamename, owner, "", "", false)
 end

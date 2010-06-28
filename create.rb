@@ -1,4 +1,4 @@
 require "send"
 c = GHostRCClient.new(:debug => true)
 
-puts c.luacmd("testcmd", ARGV[0], "dota6.67c.cfg", "sokratesius", true).inspect
+puts c.luacmd("CreateGame", ARGV[0], "wormwar.cfg", "sokratesius", true).inspect
