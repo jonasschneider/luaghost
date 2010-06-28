@@ -111,7 +111,7 @@ events = [
     a("Command", "std::string"),
     a("Args", "vector<std::string>")
   ], [
-    m("std::string GetArg(int pos) { return m_Args[pos]; }"),
+    m("std::string GetArg(int pos) { if(GetArgCount() > pos) return m_Args[pos]; }"),
     m("int GetArgCount() { return m_Args.size(); }")
   ])
 ]

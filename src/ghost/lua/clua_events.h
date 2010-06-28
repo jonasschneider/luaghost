@@ -90,7 +90,7 @@ protected:
   vector<std::string> m_Args;
 public:
   CLuaRCCommandReceivedEvent(CGHost* n_GHost, CLuaRCClientHandler* n_Client, std::string n_Command, vector<std::string> n_Args) : m_GHost(n_GHost), m_Client(n_Client), m_Command(n_Command), m_Args(n_Args) {}
-  std::string GetArg(int pos) { return m_Args[pos]; }
+  std::string GetArg(int pos) { if(GetArgCount() > pos) return m_Args[pos]; }
   int GetArgCount() { return m_Args.size(); }  
 
   std::string GetLuaName() { return "RCCommandReceived"; }
