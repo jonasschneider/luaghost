@@ -1,6 +1,6 @@
 SHELL = /bin/sh
 SYSTEM = $(shell uname)
-C++ = g++-4.2
+C++ = g++
 CC = gcc
 DFLAGS = -DGHOST_MYSQL
 OFLAGS = -O3
