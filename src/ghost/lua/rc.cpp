@@ -94,7 +94,6 @@ void CLuaRCClientHandler :: ExtractPackets() {
 void CLuaRCClientHandler :: HandleLuaCmd(BYTEARRAY Body) {
 	string Command = UTIL_ByteArrayToString(UTIL_ExtractCString(Body, 0));
 	if(Command.length() > 0) {
-	  cout << "got command " << Command << endl;
     vector<string> Args;
     string NewArg;
     int offset = Command.length() + 1;
@@ -102,7 +101,6 @@ void CLuaRCClientHandler :: HandleLuaCmd(BYTEARRAY Body) {
     while(Body.size() > offset) {
       NewArg = UTIL_ByteArrayToString(UTIL_ExtractCString(Body, offset));
       offset += NewArg.length() + 1;
-      cout << "got arg " << NewArg << endl;
       Args.push_back(NewArg);
     }
     
