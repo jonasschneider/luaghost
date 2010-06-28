@@ -166,7 +166,6 @@ bool CLuaRCClientHandler :: SetFD( void *fd, void *send_fd, int *nfds ) {
     return false;
   } else {
     if(!m_Socket->GetConnected()) {
-      std::cout << "[RC] Connection closed" << std::endl;
       return false;
     } else {
       if(m_Socket->HasError()) {
@@ -195,7 +194,8 @@ unsigned int CLuaRC :: SetFD( void *fd, void *send_fd, int *nfds ) {
 	  if((*i)->SetFD(fd, send_fd, nfds)) { // all went fine
 	    NumFDs++;
 	    i++;
-	  } else { // There was an error, drop the connection
+	  } else {
+      std::cout << "[RC] " << (*i)->GetSocket()->GetIPString() << " disconnected" << std::endl;
 	    delete *i;
 	    i = m_Handlers.erase(i);
     }
