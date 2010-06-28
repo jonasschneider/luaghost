@@ -1,5 +1,6 @@
 function init()
-  Controller:Register("RCCommandReceived", process_command)
+  Controller:Register("RCCommandReceived", process_create_command)
+  Controller:Register("RCCommandReceived", process_unhost_command)
   Controller:Register("GHostInitalized", save_ghost)
 end
 
@@ -8,7 +9,7 @@ function save_ghost(event)
   Controller:Log("Saved GHost!")
 end
 
-function process_command(event)
+function process_create_command(event)
   if event:GetCommand() ~= "CreateGame" then return end
   
   local gamename = event:GetArg(0)
@@ -26,5 +27,15 @@ function process_command(event)
     end
   else
     Controller:Log("Invalid arguments passed")
+  end
+end
+
+function process_unhost_command(event)
+  if event:GetCommand() ~= "Unhost" then return end
+  
+  game = event:GetGHost().current_game
+  if game then
+    Controller:Log("can haz game ")
+    game:Unhost()
   end
 end

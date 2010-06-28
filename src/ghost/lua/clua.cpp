@@ -57,6 +57,7 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
     // Domain classes
     class_<CGHost>("GHost")
       .def_readonly("version", &CGHost::m_Version)
+      .def_readonly("current_game", &CGHost::m_CurrentGame)
       .def("LoadMap", &CGHost::LoadMap)
       .def("CreateGame", (void(CGHost::*)(CMap*, bool, string, string))&CGHost::CreateGame),
     
@@ -65,9 +66,12 @@ void CLuaContextGHost :: ApplyToScript(CLuaScript* script) {
     
     class_<CBaseGame>("BaseGame")
       .def("SendAllChat", (void(CBaseGame::*)(string))&CBaseGame::SendAllChat)
+      .def("Unhost", &CBaseGame::Unhost)
+      
       .def("GetTeamOfPlayer", &CBaseGame::GetTeamOfPlayer)
       .def("GetHostCounter", &CBaseGame::GetHostCounter)
-      .def("GetNumPlayersInTeam", &CBaseGame::GetNumPlayersInTeam),
+      .def("GetNumPlayersInTeam", &CBaseGame::GetNumPlayersInTeam)
+      .def("GetCountdownStarted", &CBaseGame::GetCountDownStarted),
     
     class_<CMap>("Map")
   ];

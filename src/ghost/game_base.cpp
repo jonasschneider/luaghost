@@ -4641,3 +4641,12 @@ int CBaseGame :: GetNumPlayersInTeam(unsigned char team) {
       num++;
   return num;
 }
+
+bool CBaseGame :: Unhost() {
+  if( m_CountDownStarted || m_GameLoading || m_GameLoaded ) {
+    return false;
+  } else {
+    m_Exiting = true;
+    return true;
+  }
+}

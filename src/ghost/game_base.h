@@ -262,6 +262,7 @@ public:
 	virtual bool IsDownloading( );
 	virtual bool IsGameDataSaved( );
 	virtual void SaveGameData( );
+	virtual bool Unhost( );
 	virtual void StartCountDown( bool force );
 	virtual void StartCountDownAuto( bool requireSpoofChecks );
 	virtual void StopPlayers( string reason );
